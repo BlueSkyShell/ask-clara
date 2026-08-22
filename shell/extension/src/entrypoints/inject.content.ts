@@ -110,8 +110,10 @@ export default defineContentScript({
       clearTimeout(reportTimer);
       reportTimer = setTimeout(() => {
         const list = [...wallets.values()];
-        // include the legacy injected wallet if it did not announce via 6963
-        if (downstream && !list.some((w) => (downstream as { _rdns?: string })._rdns === w.rdns))
+        // Only show a generic 'Injected wallet' when NO EIP-6963 wallet announced
+        // (a legacy-only wallet). If any announced, the legacy window.ethereum is
+        // one of them — don't duplicate it.
+        if (list.length === 0 && downstream)
           list.push({ uuid: 'legacy', name: 'Injected wallet', icon: '', rdns: 'legacy.injected' });
         window.postMessage({ scope: 'clara-page', type: 'wallets', wallets: list }, '*');
       }, 250);
