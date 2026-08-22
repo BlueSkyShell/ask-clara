@@ -240,17 +240,28 @@ any point still yields a submittable artifact.
 
 | # | Stage | Leaves working |
 |---|---|---|
-| 1 | Repo scaffold, Apache-2.0, sidecar skeleton, model load | Clara answers a prompt locally |
+| 1 | Repo scaffold (pnpm workspace), Apache-2.0, engine skeleton, model load | Clara answers a prompt locally |
 | 2 | WDK wallet on Sepolia + policy rules registered | policy DENYs a bad op in a unit test |
 | 3 | **D1 explain** — decode → simulate → policy → narrate | CLI explains a malicious approval |
 | 4 | **Explain benchmark** + corpus | first real numbers |
 | 5 | **D2 construct** — tools → validate → build → re-enter D1 | CLI builds a send from English |
 | 6 | **Construct benchmark** incl. adversarial set | second real numbers |
-| 7 | Extension: provider shim + WS + panel + orb | the actual demo surface |
+| L | **Landing site** (parallel workstream, static, Vercel) | public page at ask-clara.vercel.app |
+| 7 | **Shell** — decision gate, then 7a *or* 7b (never both) | the actual demo surface |
 | 8 | Dashboard, README + permalinks, video | submission |
 
+**Stage 7 decision gate** (~Sun 01:30 ART): if stages 1–6 are done and
+benchmarks run green → **7b: WXT browser extension** (EIP-1193 provider shim +
+`ws` client + panel; engine gains a thin `daemon.ts` WebSocket adapter). If
+anything core is still unstable → **7a: Electron** (`electron-vite`, engine
+in-process, same React panel components, paste-tx + chat instead of live
+interception). Toolchain for 7b is **WXT 0.21.4 + @wxt-dev/module-react**
+(adopted from teammate's plan — replaces the earlier hand-rolled
+manifest+Vite idea). Either way the engine itself contains zero transport
+code; shells are adapters.
+
 Stretch, only if 1–8 are solid: voice (Whisper + TTS), RAG education,
-named-contacts address book.
+named-contacts P2P address book, native-messaging auto-launch.
 
 **Scope discipline:** stages 3–6 are the submission. Stage 7 is the demo. If time
 runs short, a CLI-only demo with real benchmark numbers scores better on this
