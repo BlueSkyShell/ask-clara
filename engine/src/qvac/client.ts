@@ -20,12 +20,15 @@ export async function ensureModel(key: ModelKey = 'primary'): Promise<string> {
   if (hit) return hit;
   // Single-resident: RAM is tight on the demo machine. Unload others first.
   for (const [k, id] of loaded) { await unloadModel({ modelId: id } as never).catch(() => {}); loaded.delete(k); }
-  // tools:true enables the addon's tool-call parser; toolsMode:'dynamic' anchors
-  // tools after the last user message and trims them from the kv-cache when the
-  // chain resolves — the SDK-level tool-redefinition defense (llamacpp-config).
+  // tools:true enables the addon's tool-call parser. toolsMode:'static' (the
+  // SDK default) is required here: 'dynamic' (tools_compact) rejects tool-less
+  // prompts on the same instance — verified empirically — and Clara's narration
+  // path is tool-less by design. The tool-redefinition defense therefore rests
+  // on schema-per-turn rebuild + zod validation + the policy engine, not on
+  // kv-cache trimming. README must state exactly this.
   const id = await loadModel({
     modelSrc: REGISTRY[key],
-    modelConfig: { tools: true, toolsMode: 'dynamic' },
+    modelConfig: { tools: true, toolsMode: 'static' },
   } as never);
   loaded.set(key, id);
   return id;
