@@ -32,3 +32,7 @@ source location. Update on every new surface. "Installed source wins."
 
 ## Measured
 (filled during Tasks 2/4/9/12 — ttft, tok/s, funded balance, bench p50/p95)
+
+## Empirical (run-verified)
+- Plain-Node inference boot WORKS: `loadModel({modelSrc: QWEN3_1_7B_INST_Q4})` → modelId `3eca44ec77fbe672`, 108.8s cold (download+load) on Ryzen 7 PRO 5850U.
+- `unloadModel({ modelId })` — object param, NOT the bare string (zod: "expected string at modelId").

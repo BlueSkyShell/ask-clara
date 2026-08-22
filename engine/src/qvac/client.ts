@@ -19,7 +19,7 @@ export async function ensureModel(key: ModelKey = 'primary'): Promise<string> {
   const hit = loaded.get(key);
   if (hit) return hit;
   // Single-resident: RAM is tight on the demo machine. Unload others first.
-  for (const [k, id] of loaded) { await unloadModel(id as never).catch(() => {}); loaded.delete(k); }
+  for (const [k, id] of loaded) { await unloadModel({ modelId: id } as never).catch(() => {}); loaded.delete(k); }
   const id = await loadModel({ modelSrc: REGISTRY[key] } as never);
   loaded.set(key, id);
   return id;
@@ -52,7 +52,7 @@ export async function generate(opts: GenerateOpts): Promise<{ text: string; stat
 }
 
 export async function shutdown(): Promise<void> {
-  for (const [, id] of loaded) await unloadModel(id as never).catch(() => {});
+  for (const [, id] of loaded) await unloadModel({ modelId: id } as never).catch(() => {});
   loaded.clear();
   await close().catch(() => {});
 }
