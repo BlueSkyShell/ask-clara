@@ -145,7 +145,7 @@
     cbody.appendChild(bars);
 
     // model comparison table
-    const tbl = el(`<table><thead><tr><th>model</th><th>incorrect actions</th><th>safe misses</th>
+    const tbl = el(`<table><thead><tr><th>model</th><th>incorrect actions</th><th>over-eager</th><th>safe misses</th>
       <th>clean</th><th>ambiguous</th><th>adversarial</th></tr></thead><tbody></tbody></table>`);
     const tb = tbl.querySelector('tbody');
     models.forEach(m => {
@@ -154,6 +154,7 @@
       tb.appendChild(el(`<tr>
         <td><span class="swatch" style="background:${m.color}"></span>${m.name}</td>
         <td class="num" style="color:${s.incorrectActions ? 'var(--amber)' : 'var(--mint)'}">${s.incorrectActions} (${pct(s.incorrectActionRate)})</td>
+        <td class="num">${s.overEager ?? 0}</td>
         <td class="num">${s.safeMisses}</td>
         <td class="num">${pct(bc.clean.rate)}</td>
         <td class="num">${pct(bc.ambiguous.rate)}</td>
@@ -171,7 +172,7 @@
     fails.push({ suite: 'explain', id: c.id, want: c.expected, got: c.got + (c.verdictRule ? '/' + c.verdictRule : ''), extra: c.narration }));
   models.forEach(m => R.construct[m.key].cases.filter(c => !c.pass).forEach(c =>
     fails.push({ suite: 'construct·' + m.name, id: c.id + ' (' + c.class + ')', want: c.expect, got: c.got,
-      extra: c.builtWrong ? 'INCORRECT ACTION' : c.heldInstead ? 'held instead (safe)' : '' })));
+      extra: c.dangerous ? 'INCORRECT ACTION (security)' : c.overEager ? 'over-eager: guessed instead of asking' : c.heldInstead ? 'held instead (safe)' : '' })));
 
   if (!R.explain && !models.length) {
     fhost.appendChild(el('<div class="pending">Waiting on results.</div>'));
