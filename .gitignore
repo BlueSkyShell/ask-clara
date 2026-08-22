@@ -8,3 +8,5 @@ dist/
 !.env.example
 bench/results/raw/
 .vercel/
+shell/extension/.output/
+shell/extension/.wxt/
