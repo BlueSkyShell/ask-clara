@@ -120,6 +120,8 @@ Wallet, policy engine, and transaction simulation are all `@tetherto/wdk` (+ `@t
 
 **Prerequisites:** Node 24.16+ (`.nvmrc`), [`pnpm`](https://pnpm.io) via `corepack enable`.
 
+> First `pnpm install` takes several minutes — `@qvac/sdk` compiles native (Bare/llama.cpp) modules. Verified from a clean clone: ~9 min install, then all typechecks + 56 unit tests pass and the extension builds.
+
 ```bash
 git clone <this-repo> ask-clara && cd ask-clara
 corepack enable && pnpm install
