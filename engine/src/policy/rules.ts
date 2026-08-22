@@ -57,6 +57,13 @@ export function claraPolicies(session: SessionState): Policy[] {
         reason: 'Together with what you already sent this session, this passes your session limit.',
         operation: ['sendTransaction', 'signTransaction', 'transfer'],
         conditions: [(c: Ctx) => session.sentWei + valueOf(txOf(c)) > CONFIG.caps.sessionWei] },
+      // WDK fail-closes: a governed operation with no matching rule is DENIED
+      // ('governed-but-unmatched' — verified empirically). This explicit ALLOW
+      // floor turns that into default-allow; every DENY above still wins.
+      { name: 'allow-by-default', action: 'ALLOW',
+        reason: 'No protection rule objected.',
+        operation: '*',
+        conditions: [() => true] },
     ],
   }];
 }

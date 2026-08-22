@@ -42,3 +42,5 @@ source location. Update on every new surface. "Installed source wins."
 - QWEN3_1_7B_INST_Q4: cold load 108.8s (download incl.), warm ttft 297ms, ~30 tok/s
 - LLAMA_TOOL_CALLING_1B_INST_Q4_K: load 85.4s (download incl.)
 - Tool calling WORKS end-to-end with load-time `modelConfig: {tools: true, toolsMode: 'dynamic'}`; runtime `final.toolCalls` is FLAT `[{id, name, arguments, raw}]` (not the event envelope). Qwen3 emits `<tool_call>` blocks; the addon parses them.
+- `toolsMode: 'dynamic'` (tools_compact) REJECTS tool-less prompts on the same model instance ("tools_compact requires non-empty tools for this prompt shape"). Ship `{tools: true, toolsMode: 'static'}`; redefinition defense = schema rebuild + zod + policy engine (state this exactly in README).
+- WDK policy engine FAIL-CLOSES: governed operation with no matching rule → DENY 'governed-but-unmatched'. Clara adds an explicit `allow-by-default` ALLOW floor; DENY rules still win.
