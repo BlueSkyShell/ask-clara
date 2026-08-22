@@ -1,3 +1,5 @@
 packages:
   - engine
   - bench
+allowBuilds:
+  esbuild: true
