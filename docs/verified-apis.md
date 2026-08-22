@@ -36,3 +36,8 @@ source location. Update on every new surface. "Installed source wins."
 ## Empirical (run-verified)
 - Plain-Node inference boot WORKS: `loadModel({modelSrc: QWEN3_1_7B_INST_Q4})` → modelId `3eca44ec77fbe672`, 108.8s cold (download+load) on Ryzen 7 PRO 5850U.
 - `unloadModel({ modelId })` — object param, NOT the bare string (zod: "expected string at modelId").
+- Qwen3 `<think>` blocks arrive INSIDE contentText → stripped deterministically by `stripThink()` (closed + unclosed); `/no_think` appended to system prompt for Qwen models. (engine/src/qvac/client.ts)
+
+## Measured (Ryzen 7 PRO 5850U, 30GB RAM, backendDevice: "gpu" — Radeon Vega iGPU)
+- QWEN3_1_7B_INST_Q4: cold load 108.8s (download incl.), warm ttft 297ms, ~30 tok/s
+- LLAMA_TOOL_CALLING_1B_INST_Q4_K: load 85.4s (download incl.)
