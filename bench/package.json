@@ -1,0 +1,12 @@
+{
+  "name": "@clara/bench",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "explain": "node --env-file-if-exists=../engine/.env --import tsx src/explain-bench.ts",
+    "construct": "node --env-file-if-exists=../engine/.env --import tsx src/construct-bench.ts",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": { "@clara/engine": "workspace:*", "viem": "^2.55.19" },
+  "devDependencies": { "typescript": "^5.9.0", "tsx": "^4.23.12", "@types/node": "^24" }
+}
