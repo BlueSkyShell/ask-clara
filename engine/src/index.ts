@@ -5,6 +5,7 @@ import { explain as explainImpl } from './explain/index.js';
 import { shutdown, type ModelKey } from './qvac/client.js';
 import { makeConstruct } from './construct/index.js';
 import { recordSend } from './policy/session.js';
+import { verifyOwnership, type SignInResult } from './siwe.js';
 import { CONFIG } from './config.js';
 import type { ConstructOutcome, Explanation, IncomingRequest, SendResult, SessionState } from './types.js';
 
@@ -21,11 +22,15 @@ export interface Engine {
   address(): string;
   contacts(): Record<string, string>;
   session(): SessionState;
+  /** Prove control of the attached wallet via a readable sign-in signature. */
+  verifyWallet(): Promise<SignInResult>;
+  isVerified(): boolean;
   close(): Promise<void>;
 }
 
 export async function createEngine(opts?: { modelKey?: ModelKey }): Promise<Engine> {
   const session = newSession();
+  let verified = false;
   const wallet: Wallet = await initWallet(claraPolicies(session));
   const c = makeConstruct(wallet, session, opts?.modelKey ?? 'primary');
   return {
@@ -43,6 +48,13 @@ export async function createEngine(opts?: { modelKey?: ModelKey }): Promise<Engi
     address: () => wallet.address,
     contacts: () => wallet.contacts,
     session: () => session,
+    verifyWallet: async () => {
+      const r = await verifyOwnership(wallet.address,
+        (m) => (wallet.account as unknown as { sign(m: string): Promise<string> }).sign(m));
+      verified = r.verified;
+      return r;
+    },
+    isVerified: () => verified,
     close: () => shutdown(),
   };
 }

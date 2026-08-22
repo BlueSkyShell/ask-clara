@@ -4,7 +4,7 @@ type Verdict = { decision: 'ALLOW' | 'DENY'; ruleName: string | null; reason: st
 type Explanation = { verdict: Verdict; narration: string; orb: 'safe' | 'warning'; narrationSource: string };
 interface PendingItem { id: string; request: { kind: string; to?: string }; explanation: Explanation }
 interface Info {
-  address: string; chain: string;
+  address: string; chain: string; verified: boolean;
   contacts: Record<string, string>;
   caps: { perTxEth: string; sessionEth: string };
   protections: { title: string; detail: string }[];
@@ -31,6 +31,7 @@ export default function App() {
   const [tab, setTab] = useState<Tab>('shield');
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
+  const [signedMsg, setSignedMsg] = useState('');
   const bottom = useRef<HTMLDivElement>(null);
 
   const warn = pending.some((p) => p.explanation.orb === 'warning');
@@ -93,6 +94,14 @@ export default function App() {
     if (r.ok) { const res = r.result as { txHash: string; explorerUrl: string };
       setFeed((f) => [...f, { t: 'clara', kind: 'sent', text: 'Sent — confirmed on Sepolia.', link: { href: res.explorerUrl, label: short(res.txHash) } }]); }
     else setFeed((f) => [...f, { t: 'clara', kind: 'blocked', text: '🛡 ' + (r.error ?? 'send blocked') }]);
+  };
+
+  const verify = async () => {
+    setBusy(true);
+    const r = await send({ type: 'call', method: 'verifyWallet' });
+    setBusy(false);
+    if (r.ok) { const res = r.result as { verified: boolean; message: string }; setSignedMsg(res.message); await refresh(); }
+    else setErr(r.error ?? 'verification failed');
   };
 
   return (
@@ -172,6 +181,20 @@ export default function App() {
 
         {tab === 'settings' && info && (
           <div className="pad" style={{ padding: '16px 0' }}>
+            <div className="lbl">wallet ownership</div>
+            <div className="set">
+              {info.verified ? (
+                <div className="srow"><div className="sk">Verified as yours<small>you signed a message proving control</small></div><div className="sv mint">✓ verified</div></div>
+              ) : (
+                <div className="verify">
+                  <p>Prove this wallet is yours by signing a short message. It moves no funds and grants no
+                  permissions — and Clara shows you exactly what you sign.</p>
+                  <button className="btn allow" onClick={verify} disabled={busy} style={{ width: '100%' }}>
+                    {busy ? 'signing…' : 'Verify ownership'}</button>
+                </div>
+              )}
+              {signedMsg && <pre className="siwe">{signedMsg}</pre>}
+            </div>
             <div className="lbl">connected wallet</div>
             <div className="set">
               <div className="srow"><div className="sk">Address</div><div className="sv">{info.address}</div></div>

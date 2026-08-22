@@ -116,3 +116,9 @@ button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px so
 .tabs button.on{color:var(--cyan)}
 .tabs button.on::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:26px;height:2px;border-radius:2px;background:var(--cyan)}
 .tabs .badge{position:absolute;top:5px;right:calc(50% - 20px);min-width:15px;height:15px;border-radius:8px;background:var(--amber);color:#0a0e1f;font-size:9.5px;font-weight:800;display:grid;place-items:center;padding:0 3px}
+
+/* ---------- wallet verification ---------- */
+.verify{padding:13px 14px}
+.verify p{font-size:12.5px;color:var(--muted);margin-bottom:11px}
+.siwe{margin:0;border-top:1px solid var(--line);padding:12px 14px;font-family:var(--mono);font-size:10.5px;
+  line-height:1.6;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere;background:var(--surface2)}

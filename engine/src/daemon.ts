@@ -18,7 +18,8 @@ wss.on('connection', (ws) => {
         msg.method === 'construct' ? await engine.construct(msg.params) :
         msg.method === 'confirmSend' ? await engine.confirmSend(msg.params) :
         msg.method === 'sendIncoming' ? await engine.sendIncoming(msg.params) :
-        msg.method === 'status' ? { address: engine.address(), contacts: engine.contacts(), ...guardInfo() } :
+        msg.method === 'status' ? { address: engine.address(), contacts: engine.contacts(), verified: engine.isVerified(), ...guardInfo() } :
+        msg.method === 'verifyWallet' ? await engine.verifyWallet() :
         (() => { throw new Error(`unknown method ${msg.method}`); })();
       ws.send(json({ id, ok: true, result }));
     } catch (e) {

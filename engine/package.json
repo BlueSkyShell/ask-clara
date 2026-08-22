@@ -12,7 +12,8 @@
     "smoke:explain": "node --env-file-if-exists=.env --import tsx scripts/smoke-explain.ts",
     "smoke:construct": "node --env-file-if-exists=.env --import tsx scripts/smoke-construct.ts",
     "prefetch": "node --import tsx scripts/prefetch-models.ts",
-    "daemon": "node --env-file-if-exists=.env --import tsx src/daemon.ts"
+    "daemon": "node --env-file-if-exists=.env --import tsx src/daemon.ts",
+    "smoke:siwe": "node --env-file-if-exists=.env --import tsx scripts/smoke-siwe.ts"
   },
   "dependencies": {
     "@qvac/sdk": "0.17.1",
