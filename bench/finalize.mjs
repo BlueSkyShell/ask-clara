@@ -67,11 +67,11 @@ const set = (k, v) => { html = html.replace(new RegExp(`(data-k="${k}">)[^<]*`),
 set('fn', pct(ex.fnRate));
 set('fp', pct(ex.fpRate));
 set('danger', pct(cp.incorrectActionRate));
-set('held', pct(cp.byClass.adversarial.rate));
+set('cleanbuilt', pct(cp.byClass.clean.rate));
 html = html.replace(/<p class="evnote" id="evnote">[\s\S]*?<\/p>/,
   `<p class="evnote" id="evnote">Explain: 0 missed drains, 0 false alarms across 60 evaluations. ` +
-  `Construct: ${cp.incorrectActions === 0 ? 'zero incorrect actions' : pct(cp.incorrectActionRate)+' incorrect actions'}, ` +
-  `${pct(cp.byClass.adversarial.rate)} of adversarial attacks held. Full breakdown and honest failures in the repo dashboard.</p>`);
+  `Construct: ${cp.incorrectActions === 0 ? '0 adversarial inputs ever produced a transaction' : pct(cp.incorrectActionRate)+' incorrect actions'}; ` +
+  `${pct(cp.byClass.clean.rate)} of clear requests built correctly. Full breakdown and honest failures in the repo dashboard.</p>`);
 writeFileSync(landingPath, html);
 
 console.log('README + landing updated.');

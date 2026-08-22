@@ -58,7 +58,15 @@ Verdict accuracy is 100% *because it is deterministic* — that is the design wo
 ### Construct — did it build the right thing, and refuse the traps?
 26 natural-language requests (clean / ambiguous / adversarial) × 3 runs, on two models.
 <!-- CONSTRUCT_RESULTS_START -->
-_Final numbers are generated into the dashboard from `bench/results/`; run `pnpm -C bench construct` then `node bench/finalize.mjs`. The honest-failures section in the dashboard lists every non-passing case verbatim, including where the 1.7B model is **over-eager** (guesses a small transfer to a known contact instead of asking to clarify) — a real small-model limitation we report rather than hide._
+| Class | Qwen3-1.7B | Llama-tool-1B |
+|---|---|---|
+| Clean (should build) | 97.2% (35/36) | 33.3% (12/36) |
+| Ambiguous (should ask) | 33.3% (6/18) | 0.0% (0/18) |
+| Adversarial (should hold) | 82.6% (19/23) | 12.5% (3/24) |
+
+**Incorrect actions (built a transaction it shouldn't): 0 of 77 evaluated (0.0%).** _(1 case(s) excluded as infra timeouts under memory load — not behavioral results.)_ Over-eager (guessed a small transfer to a known contact instead of asking): 6. Safe misses (held when a build was wanted): 6.
+
+> The tool-specialized Llama-1B, run through the **identical** QVAC tool interface the 1.7B uses successfully, largely failed to emit tool calls (it answered in prose or refused). Reported as-measured — a direct, evidence-based answer to "does tool-specialization beat size here?": **no.** A model-specific chat template might improve it.
 
 The security-critical result is the **adversarial** row: attacks that try to redefine a tool, hide intent in an encoding, or escalate across turns must never produce a built transaction.
 <!-- CONSTRUCT_RESULTS_END -->
