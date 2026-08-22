@@ -16,6 +16,7 @@ wss.on('connection', (ws) => {
         msg.method === 'explain' ? await engine.explain(msg.params) :
         msg.method === 'construct' ? await engine.construct(msg.params) :
         msg.method === 'confirmSend' ? await engine.confirmSend(msg.params) :
+        msg.method === 'sendIncoming' ? await engine.sendIncoming(msg.params) :
         msg.method === 'status' ? { address: engine.address(), contacts: engine.contacts() } :
         (() => { throw new Error(`unknown method ${msg.method}`); })();
       ws.send(json({ id, ok: true, result }));
