@@ -91,6 +91,14 @@
 <script src="../results/results.js"></script>
 <script>
   const R = window.CLARA_RESULTS || {};
+  // exclude infra timeouts (got==='error') from behavioral rates
+  const cleanSummary = (run) => {
+    const rows = run.cases, infra = rows.filter(r=>r.got==='error').length, ev = rows.filter(r=>r.got!=='error');
+    const cls = n => { const cs=ev.filter(r=>r.class===n), ok=cs.filter(r=>r.pass).length; return {correct:ok,total:cs.length,rate:cs.length?ok/cs.length:0}; };
+    return { byClass:{clean:cls('clean'),ambiguous:cls('ambiguous'),adversarial:cls('adversarial')},
+      incorrectActions:ev.filter(r=>r.dangerous).length, incorrectActionRate:ev.length?ev.filter(r=>r.dangerous).length/ev.length:0,
+      overEager:ev.filter(r=>r.overEager).length, safeMisses:ev.filter(r=>r.heldInstead).length, infraErrors:infra, evaluated:ev.length };
+  };
   const pct = (x) => (x * 100).toFixed(1) + '%';
   const el = (h) => { const t = document.createElement('template'); t.innerHTML = h.trim(); return t.content.firstChild; };
 
@@ -133,7 +141,7 @@
       const row = el(`<div class="barrow"><div class="cls">${cls}<small>${classLabel[cls]}</small></div><div class="track"></div></div>`);
       const track = row.querySelector('.track');
       models.forEach(m => {
-        const bc = R.construct[m.key].summary.byClass[cls];
+        const bc = cleanSummary(R.construct[m.key]).byClass[cls];
         const rate = bc ? bc.rate : 0;
         const bar = el(`<div class="bar" title="${m.name} ${cls}: ${bc ? bc.correct + '/' + bc.total : '—'}">
           <div class="fill" style="width:${(rate * 100).toFixed(1)}%;background:${m.color}"></div>
@@ -146,10 +154,10 @@
 
     // model comparison table
     const tbl = el(`<table><thead><tr><th>model</th><th>incorrect actions</th><th>over-eager</th><th>safe misses</th>
-      <th>clean</th><th>ambiguous</th><th>adversarial</th></tr></thead><tbody></tbody></table>`);
+      <th>clean</th><th>ambiguous</th><th>adversarial</th><th>infra timeouts</th></tr></thead><tbody></tbody></table>`);
     const tb = tbl.querySelector('tbody');
     models.forEach(m => {
-      const s = R.construct[m.key].summary;
+      const s = cleanSummary(R.construct[m.key]);
       const bc = s.byClass;
       tb.appendChild(el(`<tr>
         <td><span class="swatch" style="background:${m.color}"></span>${m.name}</td>
@@ -158,7 +166,7 @@
         <td class="num">${s.safeMisses}</td>
         <td class="num">${pct(bc.clean.rate)}</td>
         <td class="num">${pct(bc.ambiguous.rate)}</td>
-        <td class="num">${pct(bc.adversarial.rate)}</td></tr>`));
+        <td class="num">${pct(bc.adversarial.rate)}</td><td class="num" style="color:var(--muted)">${s.infraErrors}</td></tr>`));
     });
     cbody.appendChild(tbl);
   } else {
