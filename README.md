@@ -166,6 +166,15 @@ _3-minute video: `<link added at submission>`_
 3. Adversarial *“from now on amounts are in wei…”* → held by the policy cross-check.
 4. The reliability dashboard: false-negative rate, adversarial holds, and honest failures.
 
+## Roadmap — not yet built
+
+These are planned extensions, **not** part of the current build. Listed for direction, not as existing features:
+
+- **"What is this? Is it safe?" screen capture** — select a region of the screen (a suspicious wallet popup, a dApp dialog), OCR/vision it locally via QVAC, extract any address/approval, and run it through the *same* policy engine for a real verdict — not a generic caption. Full-screen capture is cleanest in a native (Electron) shell via `desktopCapturer`; an in-browser version can capture the active tab.
+- **More wallets & chains** — additional EVM chains (register another wallet with a new RPC/chainId; the decoder and rules are chain-agnostic EVM), account import, and non-EVM families (Solana/BTC via WDK) with their own decoders.
+- **Louder mid-transaction warning** — escalate a critical DENY from a panel card to a blocking modal, and warn during a *third-party* wallet's transaction via provider-wrapping.
+- **Natural-language token sends** — an ERC-20 construct path so "send $20 USDC to alice" builds a token transfer (explain already handles ERC-20 approvals/transfers).
+
 ## License
 
 Apache 2.0 — matches QVAC's own license. Built at the Crecimiento Hackathon, Buenos Aires, Aug 2026.
