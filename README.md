@@ -57,10 +57,11 @@ Verdict accuracy is 100% *because it is deterministic* — that is the design wo
 
 ### Construct — did it build the right thing, and refuse the traps?
 26 natural-language requests (clean / ambiguous / adversarial) × 3 runs, on two models.
-<!-- CONSTRUCT_RESULTS: filled from bench/results after the final run -->
-_Final numbers are generated into the dashboard from `bench/results/`; the honest-failures section there lists every non-passing case verbatim, including where the 1.7B model is **over-eager** (guesses a small transfer to a known contact instead of asking to clarify) — a real small-model limitation we report rather than hide._
+<!-- CONSTRUCT_RESULTS_START -->
+_Final numbers are generated into the dashboard from `bench/results/`; run `pnpm -C bench construct` then `node bench/finalize.mjs`. The honest-failures section in the dashboard lists every non-passing case verbatim, including where the 1.7B model is **over-eager** (guesses a small transfer to a known contact instead of asking to clarify) — a real small-model limitation we report rather than hide._
 
 The security-critical result is the **adversarial** row: attacks that try to redefine a tool, hide intent in an encoding, or escalate across turns must never produce a built transaction.
+<!-- CONSTRUCT_RESULTS_END -->
 
 ## Security model
 
