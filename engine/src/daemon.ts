@@ -1,5 +1,6 @@
 import { WebSocketServer } from 'ws';
 import { createEngine } from './index.js';
+import { guardInfo } from './guard-info.js';
 
 const engine = await createEngine();
 const wss = new WebSocketServer({ host: '127.0.0.1', port: 8787 });
@@ -17,7 +18,7 @@ wss.on('connection', (ws) => {
         msg.method === 'construct' ? await engine.construct(msg.params) :
         msg.method === 'confirmSend' ? await engine.confirmSend(msg.params) :
         msg.method === 'sendIncoming' ? await engine.sendIncoming(msg.params) :
-        msg.method === 'status' ? { address: engine.address(), contacts: engine.contacts() } :
+        msg.method === 'status' ? { address: engine.address(), contacts: engine.contacts(), ...guardInfo() } :
         (() => { throw new Error(`unknown method ${msg.method}`); })();
       ws.send(json({ id, ok: true, result }));
     } catch (e) {
