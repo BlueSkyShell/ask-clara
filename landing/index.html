@@ -35,7 +35,89 @@
 
   <main>
 
-    <!-- Hero, sections and footer will be added in subsequent commits -->
+    <!-- ══════════════════════════════════════════════════════
+         HERO
+         ══════════════════════════════════════════════════════ -->
+    <section class="hero" aria-label="Hero">
+
+      <!-- Left: artwork -->
+      <div class="hero-art">
+        <!--
+          Replace with:
+          <img class="hero-art__img" src="assets/clara-hero.webp" alt="" width="720" height="1800">
+          when the real cyberpunk artwork is ready.
+        -->
+        <div class="hero-art__placeholder" aria-hidden="true"></div>
+      </div>
+
+      <!-- Right: content -->
+      <div class="hero-content">
+
+        <img
+          class="hero-logo"
+          src="assets/clara-logo.svg"
+          alt="Clara"
+          width="200"
+          height="200"
+        >
+
+        <h1 class="hero-headline">Crypto,<br>made clear.</h1>
+
+        <p class="hero-desc">
+          A private AI that explains every transaction before you sign —
+          nothing ever leaves your device.
+        </p>
+
+        <p class="hero-naming">
+          <strong>Clara means "clear" in Spanish. That's the idea.</strong>
+        </p>
+
+        <div class="hero-ctas" id="download">
+          <a href="#" class="btn btn--primary">Download</a>
+          <a href="#how-it-works" class="btn btn--secondary">See how it works</a>
+        </div>
+
+        <!-- Feature cards -->
+        <div class="hero-cards" id="features" aria-label="Key features">
+
+          <article class="feature-card">
+            <svg class="feature-card__icon" aria-hidden="true" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17 2L5 7.5V16c0 7.5 5.1 14.5 12 16.5 6.9-2 12-9 12-16.5V7.5L17 2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              <path d="M11 17l4 4 8-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h2 class="feature-card__title">Explains before you sign</h2>
+            <p class="feature-card__desc">Know what you're approving before anything happens.</p>
+          </article>
+
+          <article class="feature-card">
+            <svg class="feature-card__icon" aria-hidden="true" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 7h26a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M8 27l3-4h12l3 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="10.5" cy="15" r="2" fill="currentColor"/>
+              <circle cx="17" cy="15" r="2" fill="currentColor"/>
+              <circle cx="23.5" cy="15" r="2" fill="currentColor"/>
+            </svg>
+            <h2 class="feature-card__title">Plain words in, transactions out</h2>
+            <p class="feature-card__desc">No crypto jargon. Just tell Clara what you want to do.</p>
+          </article>
+
+          <article class="feature-card">
+            <svg class="feature-card__icon" aria-hidden="true" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="9" width="28" height="20" rx="3" stroke="currentColor" stroke-width="1.8"/>
+              <rect x="9" y="5" width="16" height="6" rx="2" stroke="currentColor" stroke-width="1.8"/>
+              <circle cx="17" cy="19" r="3.5" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M17 15.5v1.5M17 21v1.5M13.5 19h1.5M19 19h1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            <h2 class="feature-card__title">100% on-device</h2>
+            <p class="feature-card__desc">Your prompts and transaction context stay on your machine.</p>
+          </article>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- More sections will follow in subsequent commits -->
 
   </main>
 
