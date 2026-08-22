@@ -302,3 +302,7 @@ track than a pretty extension with no evidence.
 - [ ] Testnet wallet only, no real funds
 - [ ] No dead code, no unimplemented README claims
 - [ ] 3-minute demo video: D1, D2, adversarial hold, dashboard
+
+> **Stage 7 gate decision (Sat 14:05 ART, ~9h ahead of schedule):** 7b — WXT
+> browser extension. Criteria: engine tasks 1–11 complete, 56/56 unit tests
+> green, both smokes demo-ready, benchmarks running, clock far ahead.
