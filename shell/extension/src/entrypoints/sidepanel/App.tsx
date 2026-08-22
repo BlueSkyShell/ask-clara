@@ -112,19 +112,19 @@ export default function App() {
       {!up && <div className="err">{err || 'Engine offline. Run: pnpm -C engine daemon'}</div>}
       <div className="feed">
         {pending.length === 0 && feed.length === 0 && (
-          <div className="empty">Nothing pending. Browse to a dApp — I read every request before you sign.
-          Or just tell me things like “send 0.001 ETH to alice”.</div>
+          <div className="empty">Guarding your wallet. Browse to a dApp — I check every transaction it’s about
+          to make and block anything dangerous before your wallet signs. Or tell me things like “send 0.001 ETH to alice”.</div>
         )}
         {pending.map((p) => (
           <div key={p.id} className={`card ${p.explanation.orb}`}>
-            <div className="tag">{p.explanation.verdict.decision === 'DENY' ? `blocked · ${p.explanation.verdict.ruleName}` : 'incoming request'}</div>
+            <div className="tag">{p.explanation.verdict.decision === 'DENY' ? `⛔ would block · ${p.explanation.verdict.ruleName}` : '✓ looks safe · your wallet will sign'}</div>
             <p>{p.explanation.narration}</p>
             <div className="meta">{p.request.kind} → {p.request.to ?? '(signature)'}</div>
             <div className="row">
               {p.explanation.verdict.decision === 'ALLOW' && (
-                <button className="approve" disabled={busy} onClick={() => decide(p.id, 'approve')}>Approve &amp; send</button>
+                <button className="approve" disabled={busy} onClick={() => decide(p.id, 'approve')}>Allow — your wallet signs</button>
               )}
-              <button className="reject" disabled={busy} onClick={() => decide(p.id, 'reject')}>Reject</button>
+              <button className="reject" disabled={busy} onClick={() => decide(p.id, 'reject')}>Block</button>
             </div>
           </div>
         ))}

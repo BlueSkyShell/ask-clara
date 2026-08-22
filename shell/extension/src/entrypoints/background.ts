@@ -3,7 +3,7 @@ import { call } from '../lib/bridge';
 // Incoming dApp requests wait here for the user's decision in the panel.
 interface PendingReq {
   id: string;
-  request: { kind: string; to?: string; value?: string; data?: string; messageHex?: string; payload?: unknown };
+  request: { kind: string; to?: string; value?: string; data?: string; messageHex?: string; payload?: unknown; guard?: boolean; hasDownstream?: boolean };
   explanation: unknown;
   tabId?: number;
 }
@@ -17,6 +17,23 @@ export default defineBackground(() => {
     scope?: string; type?: string; id?: string; request?: PendingReq['request'];
     method?: string; params?: unknown;
   }, sender, sendResponse: (r: unknown) => void) => {
+    // ---- GUARD custody-fallback: no real wallet attached, execute via Clara's testnet wallet
+    if (msg.scope === 'clara-page' && msg.type === 'exec' && msg.id && msg.request) {
+      (async () => {
+        try {
+          const r = msg.request!;
+          const result = await call('sendIncoming', { to: r.to, value: r.value, data: r.data });
+          if (sender.tab?.id !== undefined)
+            browser.tabs.sendMessage(sender.tab.id, { scope: 'clara-relay', type: 'result', id: msg.id, ok: true, result }).catch(() => {});
+          sendResponse({ ok: true });
+        } catch (e) {
+          if (sender.tab?.id !== undefined)
+            browser.tabs.sendMessage(sender.tab.id, { scope: 'clara-relay', type: 'result', id: msg.id, ok: false }).catch(() => {});
+          sendResponse({ ok: false, error: e instanceof Error ? e.message : String(e) });
+        }
+      })();
+      return true;
+    }
     // ---- from the relay content script: a dApp request intercepted on a page
     if (msg.scope === 'clara-page' && msg.type === 'request' && msg.id && msg.request) {
       (async () => {
@@ -37,15 +54,19 @@ export default defineBackground(() => {
         const item = queue.get(msg.id!);
         if (!item) return sendResponse({ ok: false, error: 'no such pending request' });
         queue.delete(msg.id!);
-        let result: unknown = { rejected: true };
+        const approve = msg.params === 'approve';
+        let result: unknown = approve ? { decision: 'approved' } : { rejected: true };
         try {
-          if (msg.params === 'approve' && item.request.kind === 'transaction') {
+          // GUARD MODE (Mode B): don't execute — hand the decision back to the page,
+          // which forwards an approved request to your real wallet to sign.
+          // LEGACY custody mode (no guard flag): Clara's own wallet executes on approve.
+          if (approve && !item.request.guard && item.request.kind === 'transaction') {
             result = await call('sendIncoming', { to: item.request.to, value: item.request.value, data: item.request.data });
           }
-          // notify the page (approve → tx result; reject → error)
+          // notify the page (approve → decision/tx result; reject → block)
           if (item.tabId !== undefined) {
             browser.tabs.sendMessage(item.tabId, { scope: 'clara-relay', type: 'result', id: item.id,
-              ok: msg.params === 'approve', result }).catch(() => {});
+              ok: approve, result }).catch(() => {});
           }
           browser.runtime.sendMessage({ scope: 'clara-panel', type: 'pending', pending: [...queue.values()] }).catch(() => {});
           sendResponse({ ok: true, result });

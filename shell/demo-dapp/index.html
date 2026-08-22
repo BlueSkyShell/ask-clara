@@ -1,69 +1,99 @@
-<!doctype html>
-<html lang="en">
-<head>
+<!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PixelPunks — Free Airdrop</title>
 <style>
-  :root{--bg:#0b0714;--surface:#160f26;--text:#ece7ff;--muted:#9a8fc0;--acid:#c6ff5e;--line:#2a2140}
+  :root{--bg:#0b0714;--surface:#160f26;--text:#ece7ff;--muted:#9a8fc0;--acid:#c6ff5e;--line:#2a2140;--mint:#7fe8c3;--amber:#ffd08a}
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:radial-gradient(1000px 500px at 70% -10%,rgba(198,255,94,.08),transparent),var(--bg);
     color:var(--text);font-family:system-ui,sans-serif;min-height:100vh;display:grid;place-items:center;padding:24px}
-  .card{max-width:440px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:34px;text-align:center}
-  .logo{font-size:34px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
-  .logo span{color:var(--acid)}
-  .tag{color:var(--muted);font-size:14px;margin-bottom:26px}
-  .art{font-size:64px;margin:10px 0 22px}
-  button{width:100%;font-family:inherit;font-size:15px;font-weight:600;border:none;border-radius:12px;
-    padding:14px;margin-top:10px;cursor:pointer}
-  .primary{background:var(--acid);color:#0b0714}
-  .ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
-  .status{margin-top:18px;font-size:13px;color:var(--muted);min-height:20px;font-family:ui-monospace,monospace;overflow-wrap:anywhere}
-  .note{margin-top:22px;font-size:11px;color:var(--muted);opacity:.7}
-</style>
-</head>
+  .card{max-width:460px;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:32px}
+  .logo{font-size:32px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}.logo span{color:var(--acid)}
+  .tag{color:var(--muted);font-size:14px;margin-bottom:20px}
+  .wallet{font-family:ui-monospace,monospace;font-size:12px;color:var(--muted);border:1px solid var(--line);
+    border-radius:10px;padding:10px 12px;margin-bottom:18px}
+  .wallet b{color:var(--mint)}
+  .art{font-size:56px;text-align:center;margin:8px 0 20px}
+  button{width:100%;font-family:inherit;font-size:15px;font-weight:600;border:none;border-radius:12px;padding:13px;margin-top:10px;cursor:pointer}
+  .primary{background:var(--acid);color:#0b0714}.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+  .log{margin-top:18px;font-family:ui-monospace,monospace;font-size:11.5px;line-height:1.7;color:var(--muted);
+    border-top:1px solid var(--line);padding-top:14px;min-height:60px;white-space:pre-wrap;overflow-wrap:anywhere}
+  .log .ok{color:var(--mint)}.log .block{color:var(--amber)}.log .sign{color:var(--acid)}
+  .note{margin-top:16px;font-size:11px;color:var(--muted);opacity:.7}
+</style></head>
 <body>
   <div class="card">
     <div class="logo">Pixel<span>Punks</span></div>
     <div class="tag">Claim your free airdrop before it's gone 🔥</div>
+    <div class="wallet" id="wallet">Wallet: connecting…</div>
     <div class="art">🎁</div>
     <button class="primary" id="claim">Claim free NFT airdrop</button>
     <button class="ghost" id="tip">Tip the artist · 0.001 ETH</button>
-    <div class="status" id="status">Not connected.</div>
-    <div class="note">Demo dApp for Clara. The “claim” button requests setApprovalForAll —
-      the exact drain pattern Clara is built to catch.</div>
+    <div class="log" id="log"></div>
+    <div class="note">Demo. A "MockWallet" is installed as your real wallet; Clara's guard sits in front of it.
+      The Claim button requests <code>setApprovalForAll</code> — the drain pattern Clara blocks before your wallet ever sees it.</div>
   </div>
 <script>
+  // ---- A mock "real wallet" (stands in for MetaMask). Clara's guard captures
+  // this as its downstream signer. We log every call it receives, so you can SEE
+  // that a blocked transaction never reaches it.
+  const log = document.getElementById('log');
+  const line = (html) => { log.innerHTML += html + '\n'; };
+  const MOCK_ADDR = '0xA11ce0000000000000000000000000000000A11ce';
+  const mockWallet = {
+    isMetaMask: true, _isMock: true,
+    request: async ({ method, params }) => {
+      if (method === 'eth_requestAccounts' || method === 'eth_accounts') return [MOCK_ADDR];
+      if (method === 'eth_chainId') return '0xaa36a7';
+      if (method === 'eth_sendTransaction') {
+        // If we get here, Clara ALLOWED it and forwarded it to us to sign.
+        line('<span class="sign">🖊 MockWallet: signing transaction to ' + (params[0].to||'').slice(0,10) + '…</span>');
+        const hash = '0x' + Array.from({length:64},()=>'0123456789abcdef'[Math.floor(Math.random()*16)]).join('');
+        line('<span class="ok">✓ MockWallet signed — tx ' + hash.slice(0,14) + '…</span>');
+        return hash;
+      }
+      throw { code: 4200, message: 'MockWallet: ' + method + ' unsupported' };
+    },
+    on(){}, removeListener(){},
+  };
+  // Assign it — Clara's guard (already installed at document_start) captures it downstream.
+  window.ethereum = mockWallet;
+
+  // ---- The dApp talks to window.ethereum, which is now Clara's GUARD.
+  const provider = () => window.ethereum;
+  const isGuarded = () => { try { return !!(provider() && provider().isClara); } catch { return false; } };
+  document.getElementById('wallet').innerHTML = isGuarded()
+    ? 'Wallet: <b>MockWallet</b> · protected by <b>Clara guard</b> 🛡'
+    : 'Wallet: MockWallet (Clara not detected — is the extension loaded?)';
+
   const NFT = '0x3333333333333333333333333333333333333333';
   const DRAINER = '0x9999999999999999999999999999999999999999';
-  const ALICE = null; // replaced below with the engine address if available
-  const status = (m) => document.getElementById('status').textContent = m;
-  // setApprovalForAll(operator=DRAINER, approved=true) — selector a22cb465
-  const AFA = '0xa22cb465'
-    + DRAINER.slice(2).toLowerCase().padStart(64, '0')
-    + '1'.padStart(64, '0');
+  const AFA = '0xa22cb465' + DRAINER.slice(2).toLowerCase().padStart(64,'0') + '1'.padStart(64,'0');
 
-  async function eth(method, params) {
-    if (!window.ethereum) { status('No wallet found. Install/enable Clara.'); return; }
-    try { return await window.ethereum.request({ method, params }); }
-    catch (e) { status('✗ ' + (e && e.message ? e.message : 'rejected')); throw e; }
-  }
   async function acct() {
-    const a = await eth('eth_requestAccounts', []);
+    const a = await provider().request({ method: 'eth_requestAccounts', params: [] });
     return a && a[0];
   }
   document.getElementById('claim').onclick = async () => {
-    const from = await acct(); if (!from) return;
-    status('Requesting approval…');
-    const r = await eth('eth_sendTransaction', [{ from, to: NFT, data: AFA }]);
-    status('✓ ' + JSON.stringify(r));
+    log.innerHTML = '';
+    line('dApp → requesting setApprovalForAll (grants ALL your NFTs to ' + DRAINER.slice(0,8) + '…)');
+    try {
+      const from = await acct();
+      await provider().request({ method: 'eth_sendTransaction', params: [{ from, to: NFT, data: AFA }] });
+      line('<span class="ok">dApp: approval granted</span>');
+    } catch (e) {
+      line('<span class="block">⛔ Clara BLOCKED it — MockWallet never saw the request. (' + (e && e.message || 'rejected') + ')</span>');
+    }
   };
   document.getElementById('tip').onclick = async () => {
-    const from = await acct(); if (!from) return;
-    status('Sending tip…');
-    const r = await eth('eth_sendTransaction', [{ from, to: from, value: '0x38d7ea4c68000' }]);
-    status('✓ ' + JSON.stringify(r));
+    log.innerHTML = '';
+    line('dApp → requesting a 0.001 ETH tip…');
+    try {
+      const from = await acct();
+      const h = await provider().request({ method: 'eth_sendTransaction', params: [{ from, to: from, value: '0x38d7ea4c68000' }] });
+      line('<span class="ok">dApp: tip sent — ' + String(h).slice(0,14) + '…</span>');
+    } catch (e) {
+      line('<span class="block">Clara blocked / rejected: ' + (e && e.message || '') + '</span>');
+    }
   };
-  if (window.ethereum) status('Clara provider detected. Ready.');
 </script>
-</body>
-</html>
+</body></html>

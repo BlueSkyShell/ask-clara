@@ -5,10 +5,10 @@ export default defineContentScript({
   main() {
     // page → background
     window.addEventListener('message', (ev) => {
-      const d = ev.data as { scope?: string; type?: string; id?: string; request?: unknown };
+      const d = ev.data as { scope?: string; type?: string; id?: string; request?: { to?: string; value?: string; data?: string } };
       if (ev.source !== window || d?.scope !== 'clara-page') return;
-      if (d.type === 'request' && d.id) {
-        browser.runtime.sendMessage({ scope: 'clara-page', type: 'request', id: d.id, request: d.request })
+      if ((d.type === 'request' || d.type === 'exec') && d.id) {
+        browser.runtime.sendMessage({ scope: 'clara-page', type: d.type, id: d.id, request: d.request })
           .catch(() => window.postMessage({ scope: 'clara-inject', type: 'result', id: d.id, ok: false }, '*'));
       }
       if (d.type === 'hello') {
