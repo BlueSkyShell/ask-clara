@@ -1,0 +1,32 @@
+{
+  "name": "@clara/engine",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": {
+    "test": "vitest run",
+    "check": "tsc --noEmit",
+    "smoke:completion": "node --env-file-if-exists=.env --import tsx scripts/smoke-completion.ts",
+    "smoke:tools": "node --env-file-if-exists=.env --import tsx scripts/smoke-tools.ts",
+    "smoke:wallet": "node --env-file-if-exists=.env --import tsx scripts/smoke-wallet.ts",
+    "smoke:explain": "node --env-file-if-exists=.env --import tsx scripts/smoke-explain.ts",
+    "smoke:construct": "node --env-file-if-exists=.env --import tsx scripts/smoke-construct.ts",
+    "prefetch": "node --import tsx scripts/prefetch-models.ts",
+    "daemon": "node --env-file-if-exists=.env --import tsx src/daemon.ts"
+  },
+  "dependencies": {
+    "@qvac/sdk": "0.17.1",
+    "@tetherto/wdk": "1.0.0-beta.16",
+    "@tetherto/wdk-wallet-evm": "1.0.0-beta.17",
+    "viem": "^2.55.19",
+    "zod": "^4.4.3",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0",
+    "tsx": "^4.23.12",
+    "vitest": "^4.1.11",
+    "@types/node": "^24",
+    "@types/ws": "^8"
+  }
+}
