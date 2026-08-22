@@ -35,11 +35,25 @@ export interface GenerateOpts {
 
 interface FinalShape { contentText: string; stats?: Record<string, unknown> }
 
+// REASONING-LEAKAGE DEFENSE, part 2: Qwen3-style <think> blocks are stripped
+// deterministically — closed blocks AND an unclosed trailing block (truncation).
+export function stripThink(text: string): string {
+  return text
+    .replace(/<think>[\s\S]*?<\/think>/g, '')
+    .replace(/<think>[\s\S]*$/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 export async function generate(opts: GenerateOpts): Promise<{ text: string; stats?: Record<string, unknown> }> {
-  const modelId = await ensureModel(opts.modelKey ?? 'primary');
+  const key = opts.modelKey ?? 'primary';
+  const modelId = await ensureModel(key);
+  // Qwen3 honors /no_think to skip its reasoning phase; harmless no-op text for
+  // non-Qwen models is avoided by gating on the model key.
+  const system = key === 'toolSpecialist' ? opts.system : opts.system + ' /no_think';
   const run = completion({
     modelId,
-    history: [{ role: 'system', content: opts.system }, ...opts.messages],
+    history: [{ role: 'system', content: system }, ...opts.messages],
     stream: true,
     generationParams: {
       ...(opts.temperature !== undefined ? { temp: opts.temperature } : {}),
@@ -47,8 +61,8 @@ export async function generate(opts: GenerateOpts): Promise<{ text: string; stat
     },
   } as never);
   const final = (await run.final) as unknown as FinalShape;
-  // REASONING-LEAKAGE DEFENSE: only contentText leaves this module.
-  return { text: final.contentText.trim(), stats: final.stats };
+  // REASONING-LEAKAGE DEFENSE: only sanitized contentText leaves this module.
+  return { text: stripThink(final.contentText), stats: final.stats };
 }
 
 export async function shutdown(): Promise<void> {
