@@ -1,0 +1,25 @@
+node_modules/
+dist/
+.output/
+.wxt/
+*.log
+.env
+.env.*
+!.env.example
+bench/results/raw/
+.vercel/
+shell/extension/.output/
+shell/extension/.wxt/
+
+# Internal planning & hackathon-admin docs — not part of the runnable project
+/agent-brief.md
+/AGENTS.md
+/brand.md
+/concept.md
+/ideas.md
+/judging.md
+/judging-pattern.md
+/research.md
+/rules.md
+/tracks.md
+/docs/

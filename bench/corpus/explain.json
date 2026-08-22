@@ -1,0 +1,22 @@
+{ "cases": [
+  { "id": "m_approve_max",      "label": "malicious", "expectVerdict": "DENY",  "expectRule": "deny-unlimited-approval", "fixture": "m_approve_max",      "rationale": "classic MaxUint256 ERC-20 approval to unknown spender" },
+  { "id": "m_approve_2pow200",  "label": "malicious", "expectVerdict": "DENY",  "expectRule": "deny-unlimited-approval", "fixture": "m_approve_2pow200",  "rationale": "huge-but-not-max approval, must still count as unlimited" },
+  { "id": "m_increase_max",     "label": "malicious", "expectVerdict": "DENY",  "expectRule": "deny-allowance-increase", "fixture": "m_increase_max",     "rationale": "increaseAllowance to effectively unlimited" },
+  { "id": "m_afa_true",         "label": "malicious", "expectVerdict": "DENY",  "expectRule": "deny-approval-for-all",   "fixture": "m_afa_true",         "rationale": "setApprovalForAll(true) hands over whole collection" },
+  { "id": "m_afa_true_2",       "label": "malicious", "expectVerdict": "DENY",  "expectRule": "deny-approval-for-all",   "fixture": "m_afa_true_2",       "rationale": "same pattern, second collection" },
+  { "id": "m_permit2_batch",    "label": "malicious", "expectVerdict": "DENY",  "expectRule": "deny-permit2-batch",      "fixture": "m_permit2_batch",    "rationale": "Permit2 PermitBatch signature drain pattern" },
+  { "id": "m_blind_sign_32",    "label": "malicious", "expectVerdict": "DENY",  "expectRule": "deny-blind-sign",         "fixture": "m_blind_sign_32",    "rationale": "opaque 32-byte personal_sign" },
+  { "id": "m_blind_sign_96",    "label": "malicious", "expectVerdict": "DENY",  "expectRule": "deny-blind-sign",         "fixture": "m_blind_sign_96",    "rationale": "opaque 96-byte personal_sign" },
+  { "id": "m_delegation",       "label": "malicious", "expectVerdict": "DENY",  "expectRule": "deny-eoa-delegation",     "fixture": "m_delegation",       "rationale": "EIP-7702 authorization to unknown delegate" },
+  { "id": "m_over_cap_send",    "label": "malicious", "expectVerdict": "DENY",  "expectRule": "deny-over-per-tx-cap",    "fixture": "m_over_cap_send",    "rationale": "0.05 ETH send, 10x over per-tx cap" },
+  { "id": "m_unknown_value",    "label": "malicious", "expectVerdict": "DENY",  "expectRule": "deny-over-per-tx-cap",    "fixture": "m_unknown_value",    "rationale": "unknown selector carrying 0.02 ETH value" },
+  { "id": "m_over_session",     "label": "malicious", "expectVerdict": "DENY",  "expectRule": "deny-over-per-tx-cap",    "fixture": "m_over_session",     "rationale": "0.009 ETH send exceeds per-tx cap" },
+  { "id": "s_native_small",     "label": "safe",      "expectVerdict": "ALLOW", "expectRule": null, "fixture": "s_native_small",     "rationale": "0.001 ETH to known address" },
+  { "id": "s_native_small_2",   "label": "safe",      "expectVerdict": "ALLOW", "expectRule": null, "fixture": "s_native_small_2",   "rationale": "0.002 ETH to new address, under caps" },
+  { "id": "s_erc20_transfer",   "label": "safe",      "expectVerdict": "ALLOW", "expectRule": null, "fixture": "s_erc20_transfer",   "rationale": "plain token transfer" },
+  { "id": "s_erc20_transfer_2", "label": "safe",      "expectVerdict": "ALLOW", "expectRule": null, "fixture": "s_erc20_transfer_2", "rationale": "small token transfer" },
+  { "id": "s_approve_bounded",  "label": "safe",      "expectVerdict": "ALLOW", "expectRule": null, "fixture": "s_approve_bounded",  "rationale": "bounded approval — normal DEX flow" },
+  { "id": "s_afa_revoke",       "label": "safe",      "expectVerdict": "ALLOW", "expectRule": null, "fixture": "s_afa_revoke",       "rationale": "REVOKING collection approval is protective" },
+  { "id": "s_sign_text",        "label": "safe",      "expectVerdict": "ALLOW", "expectRule": null, "fixture": "s_sign_text",        "rationale": "readable sign-in message" },
+  { "id": "s_unknown_zero",     "label": "safe",      "expectVerdict": "ALLOW", "expectRule": null, "fixture": "s_unknown_zero",     "rationale": "unknown zero-value call: allowed, honesty-in-narration case" }
+] }

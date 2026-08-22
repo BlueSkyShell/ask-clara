@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clara — reliability</title>
+<style>
+  :root{
+    --bg:#0a0e1f;--surface:#12172e;--surface2:#171d38;--text:#e8ecff;--muted:#9aa3c7;--line:#232a4d;
+    --cyan:#6fd6ff;--violet:#a78bfa;--mint:#7fe8c3;--amber:#ffd08a;--pink:#ffb3e0;
+    --mono:ui-monospace,'SF Mono',Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;line-height:1.55;
+    background-image:radial-gradient(1000px 500px at 85% -10%,rgba(111,214,255,.06),transparent 60%)}
+  .wrap{max-width:960px;margin:0 auto;padding:40px 24px 72px}
+  header{margin-bottom:8px}
+  .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  h1{font-size:1.9rem;letter-spacing:-.01em;margin:6px 0 4px}
+  .sub{color:var(--muted);max-width:60ch}
+  .hw{font-family:var(--mono);font-size:.72rem;color:var(--muted);margin-top:12px;padding:10px 14px;
+    border:1px solid var(--line);border-radius:10px;background:var(--surface);display:inline-block}
+  h2{font-size:1.15rem;margin:38px 0 4px}
+  .note{color:var(--muted);font-size:.9rem;margin-bottom:16px;max-width:70ch}
+  /* stat tiles */
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .tile{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px}
+  .tile .n{font-size:2.1rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+  .tile .n.good{color:var(--mint)} .tile .n.info{color:var(--cyan)}
+  .tile .l{font-family:var(--mono);font-size:.68rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-top:10px}
+  .tile .d{font-size:.8rem;color:var(--muted);margin-top:6px}
+  /* bars */
+  .bars{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin-top:6px}
+  .legend{display:flex;gap:18px;font-size:.8rem;color:var(--muted);margin-bottom:16px}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:0}
+  .barrow{display:grid;grid-template-columns:120px 1fr;gap:14px;align-items:center;margin:11px 0}
+  .barrow .cls{font-size:.85rem;color:var(--text)}
+  .barrow .cls small{display:block;color:var(--muted);font-family:var(--mono);font-size:.66rem}
+  .track{display:flex;flex-direction:column;gap:5px}
+  .bar{position:relative;height:16px;background:var(--surface2);border-radius:5px;overflow:hidden}
+  .bar .fill{height:100%;border-radius:5px}
+  .bar .lbl{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-family:var(--mono);
+    font-size:.68rem;color:var(--text);text-shadow:0 1px 2px rgba(0,0,0,.6)}
+  /* table */
+  table{width:100%;border-collapse:collapse;margin-top:6px;font-size:.9rem}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+  th{font-family:var(--mono);font-size:.68rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:400}
+  td.num{font-variant-numeric:tabular-nums;font-family:var(--mono)}
+  .swatch{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:7px}
+  /* failures */
+  .fail{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--amber);
+    border-radius:10px;padding:12px 14px;margin:9px 0;font-size:.86rem}
+  .fail .h{font-family:var(--mono);font-size:.72rem;color:var(--amber);margin-bottom:5px}
+  .fail .b{color:var(--muted)}
+  .fail .b b{color:var(--text);font-weight:600}
+  .clean{color:var(--mint);font-family:var(--mono);font-size:.85rem}
+  footer{margin-top:44px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:.8rem;font-family:var(--mono)}
+  .pending{color:var(--amber);font-family:var(--mono);font-size:.85rem;padding:14px;border:1px dashed var(--line);border-radius:10px}
+  @media (max-width:720px){.tiles{grid-template-columns:1fr 1fr}.barrow{grid-template-columns:88px 1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Clara · evidence, not vibes</div>
+    <h1>Reliability benchmarks</h1>
+    <p class="sub">Two suites, each case run 3×. The safety verdict is deterministic by design —
+    so verdict accuracy is a property of the engine, not the model. The model-dependent numbers
+    are narration quality and how a small model handles ambiguous and adversarial requests.</p>
+    <div class="hw" id="hw">loading run metadata…</div>
+  </header>
+
+  <h2>Explain — did it catch the drains?</h2>
+  <p class="note">20 labelled transactions (12 malicious drain patterns, 8 safe), 3 runs = 60 evaluations.
+  A <b>false negative</b> — a missed drain — is the costly error, so it leads.</p>
+  <div class="tiles" id="explain-tiles"></div>
+
+  <h2>Construct — did it build the right thing, and refuse the traps?</h2>
+  <p class="note">26 natural-language requests: clean, ambiguous, adversarial. The only true failure is an
+  <b>incorrect action</b> — building a transaction that shouldn't exist. Refusing or asking to clarify
+  when a build was expected is a “safe miss”, reported but not dangerous.</p>
+  <div id="construct-body"></div>
+
+  <h2>Honest failures</h2>
+  <p class="note">Every case that didn't pass, verbatim from the results. The track asks for failures shown,
+  not hidden — so here they are.</p>
+  <div id="failures"></div>
+
+  <footer id="footer">—</footer>
+</div>
+
+<script src="../results/results.js"></script>
+<script>
+  const R = window.CLARA_RESULTS || {};
+  // exclude infra timeouts (got==='error') from behavioral rates
+  const cleanSummary = (run) => {
+    const rows = run.cases, infra = rows.filter(r=>r.got==='error').length, ev = rows.filter(r=>r.got!=='error');
+    const cls = n => { const cs=ev.filter(r=>r.class===n), ok=cs.filter(r=>r.pass).length; return {correct:ok,total:cs.length,rate:cs.length?ok/cs.length:0}; };
+    return { byClass:{clean:cls('clean'),ambiguous:cls('ambiguous'),adversarial:cls('adversarial')},
+      incorrectActions:ev.filter(r=>r.dangerous).length, incorrectActionRate:ev.length?ev.filter(r=>r.dangerous).length/ev.length:0,
+      overEager:ev.filter(r=>r.overEager).length, safeMisses:ev.filter(r=>r.heldInstead).length, infraErrors:infra, evaluated:ev.length };
+  };
+  const pct = (x) => (x * 100).toFixed(1) + '%';
+  const el = (h) => { const t = document.createElement('template'); t.innerHTML = h.trim(); return t.content.firstChild; };
+
+  // ---- hardware / meta
+  const anyRun = R.explain || (R.construct && (R.construct.primary || R.construct.toolSpecialist));
+  document.getElementById('hw').textContent =
+    'Ryzen 7 PRO 5850U · 30 GB · CPU/iGPU · Qwen3-1.7B-Q4 + Llama-tool-1B-Q4_K · '
+    + (anyRun ? ('run ' + (anyRun.startedAt || '').slice(0, 16).replace('T', ' ') + ' ART') : 'no runs yet');
+
+  // ---- explain tiles
+  if (R.explain) {
+    const s = R.explain.summary;
+    const tiles = [
+      { n: pct(s.fnRate), c: 'good', l: 'missed drains (FN)', d: s.falseNegatives + ' of ' + (s.total - (s.falsePositives + 0) ? '' : '') + (R.explain.runs * 12) + ' malicious' },
+      { n: pct(s.fpRate), c: 'good', l: 'false alarms (FP)', d: s.falsePositives + ' of ' + (R.explain.runs * 8) + ' safe' },
+      { n: pct(s.correct / s.total), c: 'info', l: 'verdict + rule correct', d: s.correct + ' of ' + s.total + ' (deterministic)' },
+      { n: pct(s.narrationTemplateRate), c: 'info', l: 'template fallback', d: 'model handled ' + pct(1 - s.narrationTemplateRate) + ' of narrations' },
+    ];
+    const host = document.getElementById('explain-tiles');
+    tiles.forEach(t => host.appendChild(el(
+      `<div class="tile"><div class="n ${t.c}">${t.n}</div><div class="l">${t.l}</div><div class="d">${t.d}</div></div>`)));
+  } else {
+    document.getElementById('explain-tiles').replaceWith(el('<div class="pending">Explain results not present yet — run <code>pnpm -C bench explain</code>.</div>'));
+  }
+
+  // ---- construct: grouped bars + comparison table
+  const cbody = document.getElementById('construct-body');
+  const models = [
+    { key: 'primary', name: 'Qwen3 1.7B', color: 'var(--cyan)' },
+    { key: 'toolSpecialist', name: 'Llama-tool 1B', color: 'var(--violet)' },
+  ].filter(m => R.construct && R.construct[m.key]);
+
+  if (models.length) {
+    const classes = ['clean', 'ambiguous', 'adversarial'];
+    const classLabel = { clean: 'build correctly', ambiguous: 'ask to clarify', adversarial: 'hold the attack' };
+    const bars = el('<div class="bars"></div>');
+    bars.appendChild(el(`<div class="legend">${models.map(m =>
+      `<span><i style="background:${m.color}"></i>${m.name}</span>`).join('')}</div>`));
+    classes.forEach(cls => {
+      const row = el(`<div class="barrow"><div class="cls">${cls}<small>${classLabel[cls]}</small></div><div class="track"></div></div>`);
+      const track = row.querySelector('.track');
+      models.forEach(m => {
+        const bc = cleanSummary(R.construct[m.key]).byClass[cls];
+        const rate = bc ? bc.rate : 0;
+        const bar = el(`<div class="bar" title="${m.name} ${cls}: ${bc ? bc.correct + '/' + bc.total : '—'}">
+          <div class="fill" style="width:${(rate * 100).toFixed(1)}%;background:${m.color}"></div>
+          <div class="lbl">${bc ? pct(rate) + ' · ' + bc.correct + '/' + bc.total : '—'}</div></div>`);
+        track.appendChild(bar);
+      });
+      bars.appendChild(row);
+    });
+    cbody.appendChild(bars);
+
+    // model comparison table
+    const tbl = el(`<table><thead><tr><th>model</th><th>incorrect actions</th><th>over-eager</th><th>safe misses</th>
+      <th>clean</th><th>ambiguous</th><th>adversarial</th><th>infra timeouts</th></tr></thead><tbody></tbody></table>`);
+    const tb = tbl.querySelector('tbody');
+    models.forEach(m => {
+      const s = cleanSummary(R.construct[m.key]);
+      const bc = s.byClass;
+      tb.appendChild(el(`<tr>
+        <td><span class="swatch" style="background:${m.color}"></span>${m.name}</td>
+        <td class="num" style="color:${s.incorrectActions ? 'var(--amber)' : 'var(--mint)'}">${s.incorrectActions} (${pct(s.incorrectActionRate)})</td>
+        <td class="num">${s.overEager ?? 0}</td>
+        <td class="num">${s.safeMisses}</td>
+        <td class="num">${pct(bc.clean.rate)}</td>
+        <td class="num">${pct(bc.ambiguous.rate)}</td>
+        <td class="num">${pct(bc.adversarial.rate)}</td><td class="num" style="color:var(--muted)">${s.infraErrors}</td></tr>`));
+    });
+    cbody.appendChild(tbl);
+  } else {
+    cbody.appendChild(el('<div class="pending">Construct results not present yet — run <code>pnpm -C bench construct</code>. This page reads them live from <code>bench/results/</code>.</div>'));
+  }
+
+  // ---- honest failures (both suites, all runs)
+  const fhost = document.getElementById('failures');
+  const fails = [];
+  if (R.explain) R.explain.cases.filter(c => !c.pass).forEach(c =>
+    fails.push({ suite: 'explain', id: c.id, want: c.expected, got: c.got + (c.verdictRule ? '/' + c.verdictRule : ''), extra: c.narration }));
+  models.forEach(m => R.construct[m.key].cases.filter(c => !c.pass).forEach(c =>
+    fails.push({ suite: 'construct·' + m.name, id: c.id + ' (' + c.class + ')', want: c.expect, got: c.got,
+      extra: c.dangerous ? 'INCORRECT ACTION (security)' : c.overEager ? 'over-eager: guessed instead of asking' : c.heldInstead ? 'held instead (safe)' : '' })));
+
+  if (!R.explain && !models.length) {
+    fhost.appendChild(el('<div class="pending">Waiting on results.</div>'));
+  } else if (!fails.length) {
+    fhost.appendChild(el('<div class="clean">✓ No failures across all runs.</div>'));
+  } else {
+    fails.forEach(f => fhost.appendChild(el(
+      `<div class="fail"><div class="h">${f.suite} · ${f.id}</div>
+       <div class="b">expected <b>${f.want}</b>, got <b>${f.got}</b>${f.extra ? ' — ' + f.extra : ''}</div></div>`)));
+  }
+
+  // ---- footer
+  const parts = [];
+  if (R.explain) parts.push('explain ' + R.explain.runs + '×');
+  models.forEach(m => parts.push('construct·' + m.name + ' ' + R.construct[m.key].runs + '×'));
+  document.getElementById('footer').textContent = 'Clara · QVAC Track 2 · ' + (parts.join(' · ') || 'no data') + ' · results read live from bench/results/results.js';
+</script>
+</body>
+</html>

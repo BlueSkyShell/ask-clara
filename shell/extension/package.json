@@ -1,0 +1,24 @@
+{
+  "name": "@clara/extension",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "zip": "wxt zip",
+    "check": "tsc --noEmit",
+    "postinstall": "wxt prepare"
+  },
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "wxt": "^0.21.4",
+    "@wxt-dev/module-react": "^1.2.2",
+    "typescript": "^5.9.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19"
+  },
+  "version": "0.1.0"
+}
