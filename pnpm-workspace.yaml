@@ -1,5 +1,6 @@
 packages:
   - engine
   - bench
+  - shell/extension
 allowBuilds:
   esbuild: true
