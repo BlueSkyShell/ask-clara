@@ -11,7 +11,10 @@ export function narrationGuard(verdict: Verdict, text: string): boolean {
     if (APPROVAL_PHRASES.some((p) => t.includes(p))) return false;
     return BLOCK_PHRASES.some((p) => t.includes(p));
   }
-  return !BLOCK_PHRASES.some((p) => t.includes(p));
+  // ALLOW: negated block mentions ("this was not blocked") are fine — only a
+  // positive claim of blocking contradicts the verdict.
+  const withoutNegated = t.replace(/\b(?:not|never|no|isn't|isnt|wasn't|wasnt|won't|wont)(?:\s+\w+){0,2}\s+(?:blocked|denied|stopped|refused)\b/g, '');
+  return !BLOCK_PHRASES.some((p) => withoutNegated.includes(p));
 }
 
 const TEMPLATES: Record<string, string> = {

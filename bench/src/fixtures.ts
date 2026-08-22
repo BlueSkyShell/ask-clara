@@ -34,7 +34,7 @@ export const FIXTURES: Record<string, () => IncomingRequest> = {
   m_afa_true_2:       () => tx(T.fresh, encodeFunctionData({ abi: AFA_ABI, functionName: 'setApprovalForAll', args: [T.drainer, true] })),
   m_permit2_batch:    () => permit2(true, 3, '99999999999'),
   m_blind_sign_32:    () => ({ kind: 'personalSign', messageHex: '0x' + 'de'.repeat(32) }),
-  m_blind_sign_96:    () => ({ kind: 'personalSign', messageHex: '0x' + '77'.repeat(96) }),
+  m_blind_sign_96:    () => ({ kind: 'personalSign', messageHex: '0x' + '9f'.repeat(96) }),
   m_delegation:       () => ({ kind: 'authorization', delegate: T.drainer }),
   m_over_cap_send:    () => tx(T.drainer, '0x', wei('0.05')),
   m_unknown_value:    () => tx(T.fresh, '0xdeadbeef00000000', wei('0.02')),

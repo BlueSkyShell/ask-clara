@@ -28,3 +28,13 @@ describe('templateNarration', () => {
     }
   });
 });
+
+describe('narrationGuard — negation awareness on ALLOW', () => {
+  const allow2 = { decision: 'ALLOW', ruleName: null, policyId: null, reason: 'r' } as const;
+  it('accepts "was not blocked" phrasing', () => {
+    expect(narrationGuard(allow2, 'This transfer was not blocked; it fits your limits.')).toBe(true);
+  });
+  it('still rejects a positive block claim', () => {
+    expect(narrationGuard(allow2, 'This was blocked by policy.')).toBe(false);
+  });
+});
