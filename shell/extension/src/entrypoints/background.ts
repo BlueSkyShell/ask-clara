@@ -13,6 +13,29 @@ const queue = new Map<string, PendingReq>();
 interface WalletInfo { uuid: string; name: string; icon: string; rdns: string }
 let wallets: WalletInfo[] = [];
 
+// Toolbar-icon badge — visible even when the side panel is closed.
+function updateBadge() {
+  const n = queue.size;
+  browser.action.setBadgeText({ text: n ? String(n) : '' }).catch(() => {});
+  browser.action.setBadgeBackgroundColor({ color: '#ffb020' }).catch(() => {});
+  browser.action.setTitle({ title: n ? `Clara — ${n} request${n > 1 ? 's' : ''} to review` : 'Open Clara' }).catch(() => {});
+}
+
+// System notification so you're alerted while the panel is closed.
+function notify(item: PendingReq) {
+  const v = (item.explanation as { verdict?: { decision?: string; ruleName?: string | null }; narration?: string })?.verdict;
+  const deny = v?.decision === 'DENY';
+  browser.notifications?.create?.(`clara-${item.id}`, {
+    type: 'basic',
+    iconUrl: browser.runtime.getURL('/icon-128.png' as never),
+    title: deny ? '⛔ Clara caught a risky transaction' : 'Clara — transaction to review',
+    message: deny
+      ? `Blocked by "${v?.ruleName ?? 'policy'}". Open Clara to review before your wallet signs.`
+      : 'A site wants your wallet to sign. Open Clara to review.',
+    priority: 2,
+  }).catch(() => {});
+}
+
 export default defineBackground(() => {
   // Clicking the toolbar icon opens the side panel.
   browser.sidePanel?.setPanelBehavior?.({ openPanelOnActionClick: true }).catch(() => {});
@@ -55,7 +78,10 @@ export default defineBackground(() => {
       (async () => {
         try {
           const explanation = await call('explain', msg.request);
-          queue.set(msg.id!, { id: msg.id!, request: msg.request!, explanation, tabId: sender.tab?.id });
+          const staged = { id: msg.id!, request: msg.request!, explanation, tabId: sender.tab?.id };
+          queue.set(msg.id!, staged);
+          updateBadge();
+          notify(staged);
           browser.runtime.sendMessage({ scope: 'clara-panel', type: 'pending', pending: [...queue.values()] }).catch(() => {});
           sendResponse({ ok: true, staged: true });
         } catch (e) {
@@ -84,6 +110,8 @@ export default defineBackground(() => {
             browser.tabs.sendMessage(item.tabId, { scope: 'clara-relay', type: 'result', id: item.id,
               ok: approve, result }).catch(() => {});
           }
+          browser.notifications?.clear?.(`clara-${item.id}`).catch(() => {});
+          updateBadge();
           browser.runtime.sendMessage({ scope: 'clara-panel', type: 'pending', pending: [...queue.values()] }).catch(() => {});
           sendResponse({ ok: true, result });
         } catch (e) {
