@@ -101,6 +101,32 @@ export default defineContentScript({
       w.ethereum = guard; // fallback if the property is locked
     }
 
+    // ---- EIP-6963: discover every installed wallet (MetaMask, Rabby, Coinbase…)
+    // so Clara can show them and guard whichever one a dApp uses.
+    type Eip6963 = { info: { uuid: string; name: string; icon: string; rdns: string }; provider: Provider };
+    const wallets = new Map<string, { uuid: string; name: string; icon: string; rdns: string }>();
+    let reportTimer: ReturnType<typeof setTimeout> | undefined;
+    const reportWallets = () => {
+      clearTimeout(reportTimer);
+      reportTimer = setTimeout(() => {
+        const list = [...wallets.values()];
+        // include the legacy injected wallet if it did not announce via 6963
+        if (downstream && !list.some((w) => (downstream as { _rdns?: string })._rdns === w.rdns))
+          list.push({ uuid: 'legacy', name: 'Injected wallet', icon: '', rdns: 'legacy.injected' });
+        window.postMessage({ scope: 'clara-page', type: 'wallets', wallets: list }, '*');
+      }, 250);
+    };
+    window.addEventListener('eip6963:announceProvider', (e) => {
+      const d = (e as CustomEvent<Eip6963>).detail;
+      if (!d?.info) return;
+      wallets.set(d.info.rdns || d.info.uuid, { uuid: d.info.uuid, name: d.info.name, icon: d.info.icon, rdns: d.info.rdns });
+      // capture the first announced provider as the downstream signer if none yet
+      if (!downstream && d.provider && !(d.provider as { isClara?: boolean }).isClara) downstream = d.provider;
+      reportWallets();
+    });
+    window.dispatchEvent(new Event('eip6963:requestProvider'));
+    setTimeout(reportWallets, 600); // report legacy-only wallets too
+
     function safeParse(v: unknown): unknown {
       if (typeof v !== 'string') return v;
       try { return JSON.parse(v); } catch { return v; }

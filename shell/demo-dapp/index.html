@@ -58,6 +58,21 @@
   // Assign it — Clara's guard (already installed at document_start) captures it downstream.
   window.ethereum = mockWallet;
 
+  // ---- EIP-6963: announce several installed wallets so Clara can discover them.
+  // MockWallet is the real signer here; the others are lightweight stand-ins to
+  // show a multi-wallet list (fictional names — not impersonating real brands).
+  const icon = (bg, ch) => 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" rx="10" fill="${bg}"/><text x="20" y="27" font-family="system-ui" font-size="20" font-weight="700" fill="#0a0e1f" text-anchor="middle">${ch}</text></svg>`);
+  const stub = (name) => ({ isMock:true, request: async ({method}) => { if(method==='eth_chainId')return '0xaa36a7'; if(/accounts/.test(method))return []; throw {code:4001,message:name+' not active'}; }, on(){}, removeListener(){} });
+  const announce = [
+    { info:{ uuid:'11111111-1111-1111-1111-111111111111', name:'MockWallet', icon:icon('#c6ff5e','M'), rdns:'io.mockwallet' }, provider: mockWallet },
+    { info:{ uuid:'22222222-2222-2222-2222-222222222222', name:'Rabbit Wallet', icon:icon('#8b7bff','R'), rdns:'io.rabbit' }, provider: stub('Rabbit') },
+    { info:{ uuid:'33333333-3333-3333-3333-333333333333', name:'Nova Wallet', icon:icon('#6fd6ff','N'), rdns:'app.nova' }, provider: stub('Nova') },
+  ];
+  const doAnnounce = () => announce.forEach(d => window.dispatchEvent(new CustomEvent('eip6963:announceProvider', { detail: Object.freeze(d) })));
+  window.addEventListener('eip6963:requestProvider', doAnnounce);
+  doAnnounce();
+
   // ---- The dApp talks to window.ethereum, which is now Clara's GUARD.
   const provider = () => window.ethereum;
   const isGuarded = () => { try { return !!(provider() && provider().isClara); } catch { return false; } };

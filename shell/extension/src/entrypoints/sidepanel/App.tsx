@@ -32,6 +32,7 @@ export default function App() {
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [signedMsg, setSignedMsg] = useState('');
+  const [wallets, setWallets] = useState<{ uuid: string; name: string; icon: string; rdns: string }[]>([]);
   const bottom = useRef<HTMLDivElement>(null);
 
   const warn = pending.some((p) => p.explanation.orb === 'warning');
@@ -44,6 +45,8 @@ export default function App() {
       else { setUp(false); setErr(s.error ?? ''); }
       const p = await send({ type: 'getPending' });
       if (p.ok) setPending((p as unknown as { pending: PendingItem[] }).pending ?? []);
+      const w = await send({ type: 'getWallets' });
+      if (w.ok) setWallets((w as unknown as { wallets: { uuid: string; name: string; icon: string; rdns: string }[] }).wallets ?? []);
     } catch (e) { setUp(false); setErr(e instanceof Error ? e.message : String(e)); }
   }, []);
 
@@ -51,6 +54,7 @@ export default function App() {
     refresh();
     const onMsg = (m: { scope?: string; type?: string; pending?: PendingItem[] }) => {
       if (m?.scope === 'clara-panel' && m.type === 'pending') setPending(m.pending ?? []);
+      if (m?.scope === 'clara-panel' && m.type === 'walletsUpdated') refresh();
     };
     browser.runtime.onMessage.addListener(onMsg);
     const t = setInterval(refresh, 5000);
@@ -195,7 +199,19 @@ export default function App() {
               )}
               {signedMsg && <pre className="siwe">{signedMsg}</pre>}
             </div>
-            <div className="lbl">connected wallet</div>
+            <div className="lbl">connected wallets</div>
+            <div className="set">
+              {wallets.length === 0
+                ? <div className="srow"><div className="sk">No browser wallet detected<small>install MetaMask, Rabby, etc. — Clara guards it automatically</small></div></div>
+                : wallets.map((w, i) => (
+                  <div key={w.rdns} className="wal">
+                    {w.icon ? <img className="wicn" src={w.icon} alt="" /> : <span className="wicn ph">{w.name.slice(0, 1)}</span>}
+                    <div className="wname">{w.name}<small>{w.rdns}</small></div>
+                    {i === 0 && <span className="wbadge">🛡 guarded</span>}
+                  </div>
+                ))}
+            </div>
+            <div className="lbl">Clara’s wallet <span style={{ color: 'var(--faint)', textTransform: 'none', letterSpacing: 0 }}>· for building sends</span></div>
             <div className="set">
               <div className="srow"><div className="sk">Address</div><div className="sv">{info.address}</div></div>
               <div className="srow"><div className="sk">Network</div><div className="sv mint">{info.chain}</div></div>

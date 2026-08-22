@@ -9,6 +9,10 @@ interface PendingReq {
 }
 const queue = new Map<string, PendingReq>();
 
+// Wallets discovered on pages via EIP-6963 (MetaMask, Rabby, Coinbase…).
+interface WalletInfo { uuid: string; name: string; icon: string; rdns: string }
+let wallets: WalletInfo[] = [];
+
 export default defineBackground(() => {
   // Clicking the toolbar icon opens the side panel.
   browser.sidePanel?.setPanelBehavior?.({ openPanelOnActionClick: true }).catch(() => {});
@@ -17,6 +21,18 @@ export default defineBackground(() => {
     scope?: string; type?: string; id?: string; request?: PendingReq['request'];
     method?: string; params?: unknown;
   }, sender, sendResponse: (r: unknown) => void) => {
+    // (wallets messages carry a `wallets` field, handled below)
+    // ---- wallet discovery from a page (EIP-6963)
+    if (msg.scope === 'clara-page' && msg.type === 'wallets') {
+      wallets = ((msg as { wallets?: WalletInfo[] }).wallets ?? []).filter((w) => w && w.name);
+      browser.runtime.sendMessage({ scope: 'clara-panel', type: 'walletsUpdated' }).catch(() => {});
+      return false;
+    }
+    // ---- panel asks for the discovered wallets
+    if (msg.scope === 'clara-panel' && msg.type === 'getWallets') {
+      sendResponse({ ok: true, wallets });
+      return false;
+    }
     // ---- GUARD custody-fallback: no real wallet attached, execute via Clara's testnet wallet
     if (msg.scope === 'clara-page' && msg.type === 'exec' && msg.id && msg.request) {
       (async () => {
