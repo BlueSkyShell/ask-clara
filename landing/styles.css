@@ -48,27 +48,28 @@
   --t-slow:  360ms ease;
 }
 
-/* ── Light Mode tokens ────────────────────────────────────── */
+/* ── Light Neon Mode tokens ───────────────────────────────── */
+/* Blue-lavender-pearl — NOT white. Takes its tint from Clara's identity. */
 [data-theme="light"] {
-  --bg:           #f4f6ff;
-  --surface:      #ffffff;
-  --surface-2:    #eef0fb;
+  --bg:           #eef0ff;   /* lavanda pálida con tinte neon */
+  --surface:      #f6f7ff;   /* perla fría, muy ligeramente violeta */
+  --surface-2:    #e8ebff;   /* un poco más de carácter */
 
-  --text:         #0d0f1c;
-  --text-muted:   rgba(13, 15, 28, 0.58);
-  --text-subtle:  rgba(13, 15, 28, 0.36);
+  --text:         #0b0d1e;
+  --text-muted:   rgba(11, 13, 30, 0.56);
+  --text-subtle:  rgba(11, 13, 30, 0.34);
 
-  --cyan:         #0099cc;
-  --lavender:     #6b52e8;
-  --pink:         #c0308f;
+  --cyan:         #0088bb;
+  --lavender:     #5e46d8;
+  --pink:         #b02c84;
 
-  --border:       rgba(13, 15, 28, 0.09);
-  --border-hover: rgba(0, 153, 204, 0.30);
-  --panel:        rgba(255, 255, 255, 0.90);
+  --border:       rgba(90, 70, 200, 0.10);
+  --border-hover: rgba(0, 136, 187, 0.28);
+  --panel:        rgba(246, 247, 255, 0.88);
 
-  --shadow-card:  0 2px 12px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.04);
-  --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
-  --shadow-glow:  0 0 20px rgba(0, 153, 204, 0.08), 0 0 40px rgba(107, 82, 232, 0.05);
+  --shadow-card:  0 2px 14px rgba(80, 60, 180, 0.07), 0 1px 3px rgba(80, 60, 180, 0.04);
+  --shadow-hover: 0 12px 40px rgba(80, 60, 180, 0.13), 0 4px 12px rgba(80, 60, 180, 0.07);
+  --shadow-glow:  0 0 20px rgba(0, 136, 187, 0.09), 0 0 40px rgba(94, 70, 216, 0.06);
 }
 
 /* ── Reset ────────────────────────────────────────────────── */
@@ -683,49 +684,96 @@ footer {
   border-radius: 3px;
 }
 
-/* ── Light Mode — Hero composition ───────────────────────── */
+/* ── Light Neon Mode — Hero composition ───────────────────── */
 [data-theme="light"] .hero {
   background-position: left center;
 }
+
+/* Wide angled fade — city dissolves into lavender-pearl, no vertical wall */
 [data-theme="light"] .hero::before {
   background:
     linear-gradient(
       104deg,
-      rgba(244, 246, 255, 0.05) 0%,
-      rgba(244, 246, 255, 0.18) 22%,
-      rgba(244, 246, 255, 0.52) 42%,
-      rgba(244, 246, 255, 0.84) 60%,
-      rgba(244, 246, 255, 0.96) 76%,
-      #f4f6ff 92%
+      rgba(238, 240, 255, 0.04) 0%,
+      rgba(238, 240, 255, 0.16) 20%,
+      rgba(238, 240, 255, 0.50) 40%,
+      rgba(238, 240, 255, 0.82) 58%,
+      rgba(238, 240, 255, 0.96) 74%,
+      #eef0ff 90%
     ),
     linear-gradient(
-      118deg,
+      116deg,
       transparent 0%,
-      rgba(244, 246, 255, 0.10) 38%,
-      rgba(244, 246, 255, 0.40) 65%,
+      rgba(238, 240, 255, 0.08) 35%,
+      rgba(238, 240, 255, 0.35) 62%,
       transparent 100%
     );
 }
+
+/* Girl: darken blend removes white bg against lavender-pearl background */
 [data-theme="light"] .hero-art__img {
   mix-blend-mode: darken;
+  opacity: 0.96;
 }
+
+/* Tall progressive bottom fade + radial right-edge glow — eliminates franja */
 [data-theme="light"] .hero-art::after {
   background:
-    linear-gradient(0deg,   #f4f6ff 0%, rgba(244,246,255,0.45) 10%, transparent 30%),
-    linear-gradient(180deg, rgba(244,246,255,0.28) 0%, transparent 12%);
+    linear-gradient(
+      0deg,
+      #eef0ff 0%,
+      rgba(238, 240, 255, 0.90) 14%,
+      rgba(238, 240, 255, 0.60) 30%,
+      rgba(238, 240, 255, 0.22) 50%,
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(238, 240, 255, 0.44) 0%,
+      transparent 16%
+    ),
+    radial-gradient(
+      ellipse 55% 75% at 100% 55%,
+      rgba(238, 240, 255, 0.50) 0%,
+      transparent 100%
+    );
+  pointer-events: none;
+  z-index: 3;
 }
 
-/* Light mode header — very subtle backdrop */
+/* Light header backdrop — matches the lavender-pearl bg */
 [data-theme="light"] .site-header {
-  background: linear-gradient(180deg, rgba(244,246,255,0.6) 0%, transparent 100%);
+  background: linear-gradient(180deg, rgba(238,240,255,0.72) 0%, transparent 100%);
 }
 
-/* Light mode hero text — keep gradient but adjust */
+/* Light mode headline */
 [data-theme="light"] .hero-headline {
-  background: linear-gradient(140deg, var(--text) 50%, var(--lavender) 100%);
+  background: linear-gradient(140deg, var(--text) 45%, var(--lavender) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* Light mode mobile — stronger fade to match new bg color */
+@media (max-width: 767px) {
+  [data-theme="light"] .hero::before {
+    background: linear-gradient(
+      180deg,
+      rgba(238, 240, 255, 0.52) 0%,
+      rgba(238, 240, 255, 0.78) 55%,
+      #eef0ff 90%
+    );
+  }
+  [data-theme="light"] .hero-art::after {
+    background:
+      linear-gradient(0deg,
+        #eef0ff 0%,
+        rgba(238,240,255,0.88) 18%,
+        rgba(238,240,255,0.45) 40%,
+        transparent 65%
+      ),
+      linear-gradient(180deg, rgba(238,240,255,0.42) 0%, transparent 20%);
+  }
 }
 
 /* ── Responsive: Tablet (768–1099px) ─────────────────────── */
