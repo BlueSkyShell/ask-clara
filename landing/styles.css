@@ -48,30 +48,6 @@
   --t-slow:  360ms ease;
 }
 
-/* ── Light Neon Mode tokens ───────────────────────────────── */
-/* Blue-lavender-pearl — NOT white. Takes its tint from Clara's identity. */
-[data-theme="light"] {
-  --bg:           #eef0ff;   /* lavanda pálida con tinte neon */
-  --surface:      #f6f7ff;   /* perla fría, muy ligeramente violeta */
-  --surface-2:    #e8ebff;   /* un poco más de carácter */
-
-  --text:         #0b0d1e;
-  --text-muted:   rgba(11, 13, 30, 0.56);
-  --text-subtle:  rgba(11, 13, 30, 0.34);
-
-  --cyan:         #0088bb;
-  --lavender:     #5e46d8;
-  --pink:         #b02c84;
-
-  --border:       rgba(90, 70, 200, 0.10);
-  --border-hover: rgba(0, 136, 187, 0.28);
-  --panel:        rgba(246, 247, 255, 0.88);
-
-  --shadow-card:  0 2px 14px rgba(80, 60, 180, 0.07), 0 1px 3px rgba(80, 60, 180, 0.04);
-  --shadow-hover: 0 12px 40px rgba(80, 60, 180, 0.13), 0 4px 12px rgba(80, 60, 180, 0.07);
-  --shadow-glow:  0 0 20px rgba(0, 136, 187, 0.09), 0 0 40px rgba(94, 70, 216, 0.06);
-}
-
 /* ── Reset ────────────────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -92,7 +68,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
-  transition: background-color var(--t-slow), color var(--t-slow);
 }
 
 img { max-width: 100%; display: block; }
@@ -187,32 +162,6 @@ ul, ol { list-style: none; }
   gap: 0.625rem;
 }
 
-/* Theme toggle */
-.theme-toggle {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 99px;
-  width: 34px;
-  height: 34px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  line-height: 1;
-  color: var(--text-muted);
-  transition: border-color var(--t-base), background var(--t-base), color var(--t-base);
-  flex-shrink: 0;
-}
-.theme-toggle:hover {
-  border-color: var(--border-hover);
-  color: var(--text);
-  background: rgba(111, 214, 255, 0.06);
-}
-.theme-toggle:focus-visible {
-  outline: 2px solid var(--lavender);
-  outline-offset: 3px;
-}
 
 .site-header__cta {
   font-size: 0.875rem;
@@ -684,98 +633,6 @@ footer {
   border-radius: 3px;
 }
 
-/* ── Light Neon Mode — Hero composition ───────────────────── */
-[data-theme="light"] .hero {
-  background-position: left center;
-}
-
-/* Wide angled fade — city dissolves into lavender-pearl, no vertical wall */
-[data-theme="light"] .hero::before {
-  background:
-    linear-gradient(
-      104deg,
-      rgba(238, 240, 255, 0.04) 0%,
-      rgba(238, 240, 255, 0.16) 20%,
-      rgba(238, 240, 255, 0.50) 40%,
-      rgba(238, 240, 255, 0.82) 58%,
-      rgba(238, 240, 255, 0.96) 74%,
-      #eef0ff 90%
-    ),
-    linear-gradient(
-      116deg,
-      transparent 0%,
-      rgba(238, 240, 255, 0.08) 35%,
-      rgba(238, 240, 255, 0.35) 62%,
-      transparent 100%
-    );
-}
-
-/* Girl: darken blend removes white bg against lavender-pearl background */
-[data-theme="light"] .hero-art__img {
-  mix-blend-mode: darken;
-  opacity: 0.96;
-}
-
-/* Tall progressive bottom fade + radial right-edge glow — eliminates franja */
-[data-theme="light"] .hero-art::after {
-  background:
-    linear-gradient(
-      0deg,
-      #eef0ff 0%,
-      rgba(238, 240, 255, 0.90) 14%,
-      rgba(238, 240, 255, 0.60) 30%,
-      rgba(238, 240, 255, 0.22) 50%,
-      transparent 70%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(238, 240, 255, 0.44) 0%,
-      transparent 16%
-    ),
-    radial-gradient(
-      ellipse 55% 75% at 100% 55%,
-      rgba(238, 240, 255, 0.50) 0%,
-      transparent 100%
-    );
-  pointer-events: none;
-  z-index: 3;
-}
-
-/* Light header backdrop — matches the lavender-pearl bg */
-[data-theme="light"] .site-header {
-  background: linear-gradient(180deg, rgba(238,240,255,0.72) 0%, transparent 100%);
-}
-
-/* Light mode headline */
-[data-theme="light"] .hero-headline {
-  background: linear-gradient(140deg, var(--text) 45%, var(--lavender) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Light mode mobile — stronger fade to match new bg color */
-@media (max-width: 767px) {
-  [data-theme="light"] .hero::before {
-    background: linear-gradient(
-      180deg,
-      rgba(238, 240, 255, 0.52) 0%,
-      rgba(238, 240, 255, 0.78) 55%,
-      #eef0ff 90%
-    );
-  }
-  [data-theme="light"] .hero-art::after {
-    background:
-      linear-gradient(0deg,
-        #eef0ff 0%,
-        rgba(238,240,255,0.88) 18%,
-        rgba(238,240,255,0.45) 40%,
-        transparent 65%
-      ),
-      linear-gradient(180deg, rgba(238,240,255,0.42) 0%, transparent 20%);
-  }
-}
-
 /* ── Responsive: Tablet (768–1099px) ─────────────────────── */
 @media (max-width: 1099px) {
   .site-header { padding: 1.375rem 2rem; }
@@ -811,15 +668,6 @@ footer {
       var(--bg) 90%
     );
   }
-  [data-theme="light"] .hero::before {
-    background: linear-gradient(
-      180deg,
-      rgba(244, 246, 255, 0.50) 0%,
-      rgba(244, 246, 255, 0.80) 55%,
-      #f4f6ff 90%
-    );
-  }
-
   .hero-content {
     order: 1;
     align-items: center;
