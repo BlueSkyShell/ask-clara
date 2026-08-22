@@ -36,3 +36,15 @@ describe('stepToolTurn', () => {
     else expect.fail('expected toolError');
   });
 });
+
+describe('stepToolTurn — flat runtime shape (0.17.1 verified)', () => {
+  const flat = (name: string, args: Record<string, unknown>) => ({ id: 'x', name, arguments: args, raw: '' });
+  it('flat terminal call terminates with validated args', async () => {
+    const r = await stepToolTurn({ contentText: '', toolCalls: [flat('done', { result: 'ok' })] } as never, [echo, done]);
+    expect(r).toEqual({ action: 'terminate', result: { kind: 'tool', name: 'done', args: { result: 'ok' } } });
+  });
+  it('flat executable call continues', async () => {
+    const r = await stepToolTurn({ contentText: '', toolCalls: [flat('echo', { msg: 'hi' })] } as never, [echo, done]);
+    expect(r.action).toBe('continue');
+  });
+});

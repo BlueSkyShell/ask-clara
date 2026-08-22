@@ -1,6 +1,6 @@
 import { completion } from '@qvac/sdk';
 import type { ZodObject, ZodRawShape } from 'zod';
-import { ensureModel, type ModelKey } from './client.js';
+import { ensureModel, stripThink, type ModelKey } from './client.js';
 
 export interface LoopTool {
   name: string;
@@ -20,12 +20,23 @@ type Step =
 
 interface FinalLike {
   contentText: string;
-  toolCalls: { type?: string; call?: { name: string; arguments: Record<string, unknown> } }[];
+  // Runtime (0.17.1, verified empirically): flat [{id, name, arguments, raw}].
+  // The events schema also documents an envelope {type:'toolCall', call:{...}} —
+  // accept both so a future SDK change does not silently break the loop.
+  toolCalls: ({ name?: string; arguments?: Record<string, unknown> } & { call?: { name: string; arguments: Record<string, unknown> } })[];
+}
+
+function firstCall(final: FinalLike): { name: string; arguments: Record<string, unknown> } | undefined {
+  const t = final.toolCalls?.[0];
+  if (!t) return undefined;
+  if (t.call?.name) return t.call;
+  if (t.name) return { name: t.name, arguments: t.arguments ?? {} };
+  return undefined;
 }
 
 // Pure decision core — unit-tested without a model.
 export async function stepToolTurn(final: FinalLike, tools: LoopTool[]): Promise<Step> {
-  const tc = final.toolCalls?.[0]?.call;
+  const tc = firstCall(final);
   if (!tc) return { action: 'terminate', result: { kind: 'text', text: final.contentText.trim() } };
   const tool = tools.find((t) => t.name === tc.name);
   if (!tool) return { action: 'terminate', result: { kind: 'toolError', code: 'UNKNOWN_TOOL', message: `unknown tool ${tc.name}` } };
@@ -41,8 +52,10 @@ export async function runToolTurn(opts: {
   messages: { role: string; content: string }[];
   tools: LoopTool[]; maxIterations?: number;
 }): Promise<ToolTurnResult> {
-  const modelId = await ensureModel(opts.modelKey ?? 'primary');
-  const history = [{ role: 'system', content: opts.system }, ...opts.messages];
+  const key = opts.modelKey ?? 'primary';
+  const modelId = await ensureModel(key);
+  const system = key === 'toolSpecialist' ? opts.system : opts.system + ' /no_think';
+  const history = [{ role: 'system', content: system }, ...opts.messages];
   // TOOL-REDEFINITION DEFENSE: schemas are rebuilt from source objects on every
   // call — nothing from conversation history can alter a tool's contract.
   const sdkTools = opts.tools.map((t) => ({ name: t.name, description: t.description, parameters: t.parameters }));
@@ -50,7 +63,11 @@ export async function runToolTurn(opts: {
     const run = completion({ modelId, history, stream: true, tools: sdkTools } as never);
     const final = (await run.final) as unknown as FinalLike;
     const step = await stepToolTurn(final, opts.tools);
-    if (step.action === 'terminate') return step.result;
+    if (step.action === 'terminate') {
+      // sanitize any free-text result (reasoning-leakage defense)
+      if (step.result.kind === 'text') return { kind: 'text', text: stripThink(step.result.text) };
+      return step.result;
+    }
     history.push({ role: 'assistant', content: final.contentText || '(called a tool)' });
     history.push({ role: 'tool', content: step.feedback }); // fallback variant: role 'user' — see plan Task 3 Step 5
   }
