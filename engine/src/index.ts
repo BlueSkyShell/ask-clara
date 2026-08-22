@@ -6,6 +6,7 @@ import { shutdown, type ModelKey } from './qvac/client.js';
 import { makeConstruct } from './construct/index.js';
 import { recordSend } from './policy/session.js';
 import { verifyOwnership, type SignInResult } from './siwe.js';
+import { mnemonicToAccount } from 'viem/accounts';
 import { CONFIG } from './config.js';
 import type { ConstructOutcome, Explanation, IncomingRequest, SendResult, SessionState } from './types.js';
 
@@ -49,8 +50,10 @@ export async function createEngine(opts?: { modelKey?: ModelKey }): Promise<Engi
     contacts: () => wallet.contacts,
     session: () => session,
     verifyWallet: async () => {
-      const r = await verifyOwnership(wallet.address,
-        (m) => (wallet.account as unknown as { sign(m: string): Promise<string> }).sign(m));
+      // Clara's own ownership check — signs the readable message directly from
+      // the seed (viem), so it is NOT gated by the dApp-facing guard policy.
+      const signer = mnemonicToAccount(CONFIG.seedPhrase);
+      const r = await verifyOwnership(signer.address, (m) => signer.signMessage({ message: m }));
       verified = r.verified;
       return r;
     },
