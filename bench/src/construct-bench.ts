@@ -13,10 +13,17 @@ let incorrectActions = 0, safeMisses = 0, overEagerCount = 0;
 
 for (let r = 0; r < runs; r++) {
   for (const c of corpus.cases) {
-    const engine = await createEngine({ modelKey }); // fresh session per case
-    let last: Awaited<ReturnType<typeof engine.construct>> = { kind: 'error', message: 'no turns' };
+    let last: Awaited<ReturnType<Awaited<ReturnType<typeof createEngine>>['construct']>> = { kind: 'error', message: 'no turns' };
     const t0 = Date.now();
-    for (const turn of c.turns) last = await engine.construct(turn);
+    let engine: Awaited<ReturnType<typeof createEngine>> | null = null;
+    try {
+      engine = await createEngine({ modelKey }); // fresh session per case
+      for (const turn of c.turns) last = await engine.construct(turn);
+    } catch (err) {
+      last = { kind: 'error', message: err instanceof Error ? err.message : String(err) };
+    } finally {
+      if (engine) await engine.close().catch(() => {});
+    }
     const ms = Date.now() - t0;
     let pass = last.kind === c.expect;
     if (pass && last.kind === 'built' && c.expectTransfer) {
@@ -41,7 +48,6 @@ for (let r = 0; r < runs; r++) {
       detail: last.kind === 'built' ? { to: last.transfer.to, label: last.transfer.recipientLabel, amountWei: last.transfer.amountWei.toString() } : last });
     const mark = pass ? 'PASS' : dangerous ? 'DANGER' : overEager ? 'over-eager' : heldInstead ? 'held' : 'MISS';
     console.log(`[${r}] ${mark} ${c.id} (${c.class}): expected ${c.expect}, got ${last.kind} (${ms}ms)`);
-    await engine.close();
   }
 }
 
