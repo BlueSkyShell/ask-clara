@@ -9,7 +9,7 @@ for (const m of [QWEN3_1_7B_INST_Q4, LLAMA_TOOL_CALLING_1B_INST_Q4_K]) {
   const t0 = Date.now();
   const id = await loadModel({ modelSrc: m } as never, undefined);
   console.log('[prefetch] loaded', name, 'as', id, 'in', ((Date.now() - t0) / 1000).toFixed(1) + 's');
-  await unloadModel(id as never);
+  await unloadModel({ modelId: id } as never);
 }
 console.log('[prefetch] done');
 await close();
