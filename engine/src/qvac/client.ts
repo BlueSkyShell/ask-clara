@@ -20,7 +20,13 @@ export async function ensureModel(key: ModelKey = 'primary'): Promise<string> {
   if (hit) return hit;
   // Single-resident: RAM is tight on the demo machine. Unload others first.
   for (const [k, id] of loaded) { await unloadModel({ modelId: id } as never).catch(() => {}); loaded.delete(k); }
-  const id = await loadModel({ modelSrc: REGISTRY[key] } as never);
+  // tools:true enables the addon's tool-call parser; toolsMode:'dynamic' anchors
+  // tools after the last user message and trims them from the kv-cache when the
+  // chain resolves — the SDK-level tool-redefinition defense (llamacpp-config).
+  const id = await loadModel({
+    modelSrc: REGISTRY[key],
+    modelConfig: { tools: true, toolsMode: 'dynamic' },
+  } as never);
   loaded.set(key, id);
   return id;
 }

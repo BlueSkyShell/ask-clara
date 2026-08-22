@@ -41,3 +41,4 @@ source location. Update on every new surface. "Installed source wins."
 ## Measured (Ryzen 7 PRO 5850U, 30GB RAM, backendDevice: "gpu" — Radeon Vega iGPU)
 - QWEN3_1_7B_INST_Q4: cold load 108.8s (download incl.), warm ttft 297ms, ~30 tok/s
 - LLAMA_TOOL_CALLING_1B_INST_Q4_K: load 85.4s (download incl.)
+- Tool calling WORKS end-to-end with load-time `modelConfig: {tools: true, toolsMode: 'dynamic'}`; runtime `final.toolCalls` is FLAT `[{id, name, arguments, raw}]` (not the event envelope). Qwen3 emits `<tool_call>` blocks; the addon parses them.
