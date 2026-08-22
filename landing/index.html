@@ -13,6 +13,8 @@
 </head>
 <body>
 
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
   <header class="site-header">
     <div class="site-header__inner">
 
@@ -33,7 +35,7 @@
     </div>
   </header>
 
-  <main>
+  <main id="main-content">
 
     <!-- ══════════════════════════════════════════════════════
          HERO
@@ -210,9 +212,36 @@
       </div>
     </section>
 
-    <!-- Final CTA and footer will follow in the next commit -->
+    <!-- ══════════════════════════════════════════════════════
+         FINAL CTA
+         ══════════════════════════════════════════════════════ -->
+    <section class="final-cta" aria-labelledby="cta-title">
+      <h2 class="final-cta__headline" id="cta-title">
+        Crypto shouldn't require blind trust.
+      </h2>
+      <span class="final-cta__accent" aria-hidden="true">Ask Clara.</span>
+      <a href="#download" class="btn btn--primary">Download</a>
+    </section>
 
   </main>
+
+  <!-- ══════════════════════════════════════════════════════
+       FOOTER
+       ══════════════════════════════════════════════════════ -->
+  <footer>
+    <div class="footer-inner">
+      <a href="/" class="footer-logo" aria-label="Clara home">
+        <img src="assets/clara-logo.svg" alt="" width="22" height="22" aria-hidden="true">
+        Clara
+      </a>
+      <p class="footer-copy">© 2026 Clara. All rights reserved.</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="#privacy">Privacy</a>
+        <a href="#terms">Terms</a>
+        <a href="#docs">Docs</a>
+      </nav>
+    </div>
+  </footer>
 
 </body>
 </html>
