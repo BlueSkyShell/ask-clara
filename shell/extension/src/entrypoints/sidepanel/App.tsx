@@ -13,7 +13,7 @@ type Activity = { kind: 'block' | 'allow'; label: string; sub: string; at: numbe
 type Chat =
   | { t: 'user'; text: string }
   | { t: 'clara'; kind: string; text: string; link?: { href: string; label: string } }
-  | { t: 'built'; confirmId: string; text: string; narration: string; done?: boolean };
+  | { t: 'built'; confirmId: string; text: string; narration: string; to: string; valueWei: string; done?: boolean };
 type Tab = 'shield' | 'chat' | 'settings';
 
 const send = (msg: Record<string, unknown>) =>
@@ -37,6 +37,8 @@ export default function App() {
 
   const warn = pending.some((p) => p.explanation.orb === 'warning');
   const orb = warn ? 'warning' : busy ? 'thinking' : activity[0]?.kind === 'allow' ? 'safe' : 'idle';
+  const hasExtWallet = wallets.length > 0;
+  const walletName = wallets[0]?.name ?? 'your wallet';
 
   const refresh = useCallback(async () => {
     try {
@@ -88,6 +90,7 @@ export default function App() {
     else if (o.kind === 'built') {
       const eth = (Number(o.transfer!.amountWei) / 1e18).toString();
       setFeed((f) => [...f, { t: 'built', confirmId: o.confirmId!, narration: o.explanation!.narration,
+        to: o.transfer!.to, valueWei: o.transfer!.amountWei,
         text: `Send ${eth} ETH to ${o.transfer!.recipientLabel ?? short(o.transfer!.to)}` }]);
     }
   };
@@ -98,6 +101,24 @@ export default function App() {
     if (r.ok) { const res = r.result as { txHash: string; explorerUrl: string };
       setFeed((f) => [...f, { t: 'clara', kind: 'sent', text: 'Sent — confirmed on Sepolia.', link: { href: res.explorerUrl, label: short(res.txHash) } }]); }
     else setFeed((f) => [...f, { t: 'clara', kind: 'blocked', text: '🛡 ' + (r.error ?? 'send blocked') }]);
+  };
+  // Clara built it; YOUR wallet signs it. Clara never touches the key.
+  const confirmExternal = async (m: Extract<Chat, { t: 'built' }>) => {
+    setBusy(true);
+    const id = crypto.randomUUID();
+    const tx = { to: m.to, value: '0x' + BigInt(m.valueWei).toString(16), data: '0x' };
+    const r = await send({ type: 'externalSend', id, tx });
+    setBusy(false);
+    if (r.ok) {
+      const res = r.result as { txHash: string };
+      setFeed((f) => f.map((it) => it.t === 'built' && it.confirmId === m.confirmId ? { ...it, done: true } : it));
+      // keep the session cap accurate even though our own wallet signed
+      send({ type: 'call', method: 'noteSent', params: { to: m.to, valueWei: m.valueWei } }).catch(() => {});
+      setFeed((f) => [...f, { t: 'clara', kind: 'sent', text: `Sent — you signed in ${walletName}, confirmed on Sepolia.`,
+        link: { href: `https://sepolia.etherscan.io/tx/${res.txHash}`, label: short(res.txHash) } }]);
+    } else {
+      setFeed((f) => [...f, { t: 'clara', kind: 'not sent', text: '🛡 ' + (r.error ?? 'send failed') }]);
+    }
   };
 
   const verify = async () => {
@@ -173,7 +194,12 @@ export default function App() {
                 <div key={i} className="card safe" style={{ margin: 0, alignSelf: 'flex-start', maxWidth: '92%' }}>
                   <div className="tag">ready — needs your confirmation</div>
                   <p>{m.text}</p><p style={{ color: 'var(--muted)', marginTop: 5 }}>{m.narration}</p>
-                  {!m.done && <div className="row"><button className="btn allow" disabled={busy} onClick={() => confirm(m.confirmId)}>Confirm send</button></div>}
+                  {!m.done && (hasExtWallet
+                    ? <div className="row">
+                        <button className="btn allow" disabled={busy} onClick={() => confirmExternal(m)}>Confirm in {walletName}</button>
+                        <button className="btn" disabled={busy} onClick={() => confirm(m.confirmId)} title="Sign with Clara’s built-in testnet wallet instead">Use Clara’s wallet</button>
+                      </div>
+                    : <div className="row"><button className="btn allow" disabled={busy} onClick={() => confirm(m.confirmId)}>Confirm send</button></div>)}
                 </div>
               ) : (
                 <div key={i} className="msg clara"><span className="k">{m.kind}</span>{m.text}

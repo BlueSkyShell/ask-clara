@@ -20,6 +20,10 @@ export interface Engine {
   /** Send a user-approved INCOMING dApp transaction. Still passes the policy
    *  proxy at send time — approval in the UI cannot override a DENY. */
   sendIncoming(req: { to: string; value?: string; data?: string }): Promise<SendResult>;
+  /** Record a send that YOUR OWN wallet signed (construct → external wallet).
+   *  Clara never held the key, but the session cap must still accumulate so the
+   *  cumulative-limit defense holds across externally-signed transfers. */
+  noteSent(req: { to: string; valueWei: string }): { sessionWei: string };
   address(): string;
   contacts(): Record<string, string>;
   session(): SessionState;
@@ -45,6 +49,10 @@ export async function createEngine(opts?: { modelKey?: ModelKey }): Promise<Engi
       }).sendTransaction({ to: req.to, value, ...(req.data && req.data !== '0x' ? { data: req.data } : {}) });
       recordSend(session, req.to, value);
       return { txHash: hash, explorerUrl: `${CONFIG.chain.explorer}/tx/${hash}` };
+    },
+    noteSent: (req) => {
+      recordSend(session, req.to, BigInt(req.valueWei));
+      return { sessionWei: session.sentWei.toString() };
     },
     address: () => wallet.address,
     contacts: () => wallet.contacts,

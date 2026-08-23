@@ -13,6 +13,17 @@ const queue = new Map<string, PendingReq>();
 interface WalletInfo { uuid: string; name: string; icon: string; rdns: string }
 let wallets: WalletInfo[] = [];
 
+// Clara-built sends awaiting the page wallet's signature (construct → your wallet).
+// id → the panel's sendResponse, resolved when the page reports the tx hash.
+const externalPending = new Map<string, { respond: (r: unknown) => void; timer: ReturnType<typeof setTimeout> }>();
+function settleExternal(id: string, r: unknown) {
+  const e = externalPending.get(id);
+  if (!e) return;
+  externalPending.delete(id);
+  clearTimeout(e.timer);
+  e.respond(r);
+}
+
 // Toolbar-icon badge — visible even when the side panel is closed.
 function updateBadge() {
   const n = queue.size;
@@ -43,6 +54,7 @@ export default defineBackground(() => {
   browser.runtime.onMessage.addListener((msg: {
     scope?: string; type?: string; id?: string; request?: PendingReq['request'];
     method?: string; params?: unknown;
+    tx?: { to?: string; value?: string; data?: string }; ok?: boolean; hash?: string; error?: string;
   }, sender, sendResponse: (r: unknown) => void) => {
     // (wallets messages carry a `wallets` field, handled below)
     // ---- wallet discovery from a page (EIP-6963)
@@ -54,6 +66,26 @@ export default defineBackground(() => {
     // ---- panel asks for the discovered wallets
     if (msg.scope === 'clara-panel' && msg.type === 'getWallets') {
       sendResponse({ ok: true, wallets });
+      return false;
+    }
+    // ---- panel → sign a Clara-built transfer with YOUR wallet on the active tab
+    if (msg.scope === 'clara-panel' && msg.type === 'externalSend' && msg.id && msg.tx) {
+      (async () => {
+        const id = msg.id!;
+        const tabs = await browser.tabs.query({ active: true, lastFocusedWindow: true })
+          .then((t) => t.length ? t : browser.tabs.query({ active: true })).catch(() => []);
+        const tabId = tabs[0]?.id;
+        if (tabId === undefined) { sendResponse({ ok: false, error: 'No active tab with a wallet. Open the site where your wallet is connected, then confirm again.' }); return; }
+        const timer = setTimeout(() => settleExternal(id, { ok: false, error: 'Your wallet didn’t respond in time.' }), 120_000);
+        externalPending.set(id, { respond: sendResponse, timer });
+        browser.tabs.sendMessage(tabId, { scope: 'clara-relay', type: 'externalSend', id, tx: msg.tx })
+          .catch(() => settleExternal(id, { ok: false, error: 'Couldn’t reach that tab. Reload the page with your wallet and try again.' }));
+      })();
+      return true; // async — sendResponse fires when the page reports back
+    }
+    // ---- page → result of a Clara-built send the wallet signed (or rejected)
+    if (msg.scope === 'clara-page' && msg.type === 'externalResult' && msg.id) {
+      settleExternal(msg.id, msg.ok ? { ok: true, result: { txHash: msg.hash } } : { ok: false, error: msg.error ?? 'Your wallet rejected the transaction.' });
       return false;
     }
     // ---- GUARD custody-fallback: no real wallet attached, execute via Clara's testnet wallet

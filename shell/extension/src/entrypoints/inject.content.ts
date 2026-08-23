@@ -96,7 +96,41 @@ export default defineContentScript({
 
     // ---- Path 2: EIP-6963 — wrap and re-announce every wallet transparently
     type Announce = { info: Info; provider: Provider };
-    const guarded = new Map<string, Announce>();
+    // Keep the wrapped provider (for the dApp) AND the real one (for Clara-built
+    // sends, which are already policy-checked and go straight to the wallet).
+    const guarded = new Map<string, { info: Info; provider: Provider; real: Provider }>();
+
+    // Pick a wallet to sign a Clara-built transfer: the legacy provider if the
+    // page uses one, else the first EIP-6963 wallet discovered.
+    const pickWallet = (): Provider | undefined => {
+      if (downstream) return downstream;
+      for (const e of guarded.values()) return e.real;
+      return undefined;
+    };
+
+    // ---- Clara-built send: your OWN wallet signs (construct → external wallet).
+    // Calls the REAL provider directly (guard already ran the policy re-check in
+    // the engine), so MetaMask/Rabby shows its own confirmation and broadcasts.
+    window.addEventListener('message', (ev) => {
+      const d = ev.data as { scope?: string; type?: string; id?: string; tx?: { to?: string; value?: string; data?: string } };
+      if (ev.source !== window || d?.scope !== 'clara-cmd' || d.type !== 'externalSend' || !d.id) return;
+      (async () => {
+        try {
+          const real = pickWallet();
+          if (!real) throw new Error('No wallet is connected on this page. Open the site where your wallet is connected, then try again.');
+          let accounts = (await real.request({ method: 'eth_accounts' })) as string[] | undefined;
+          if (!accounts?.length) accounts = (await real.request({ method: 'eth_requestAccounts' })) as string[];
+          const from = accounts?.[0];
+          if (!from) throw new Error('Your wallet has no account available to sign.');
+          const hash = await real.request({ method: 'eth_sendTransaction', params: [{ from, to: d.tx!.to, value: d.tx!.value, data: d.tx!.data ?? '0x' }] });
+          window.postMessage({ scope: 'clara-page', type: 'externalResult', id: d.id, ok: true, hash }, '*');
+        } catch (e) {
+          const m = e as { code?: number; message?: string };
+          const error = m?.code === 4001 ? 'You rejected the transaction in your wallet.' : (m?.message ?? 'Your wallet rejected the transaction.');
+          window.postMessage({ scope: 'clara-page', type: 'externalResult', id: d.id, ok: false, error }, '*');
+        }
+      })();
+    });
     let reportTimer: ReturnType<typeof setTimeout> | undefined;
     const reportWallets = () => {
       clearTimeout(reportTimer);
@@ -115,7 +149,7 @@ export default defineContentScript({
         const d = (ev as CustomEvent<Announce>).detail;
         if (d?.info && d.provider && !d.provider.isClara) {
           let entry = guarded.get(d.info.rdns);
-          if (!entry) { entry = { info: d.info, provider: guardProvider(d.provider) }; guarded.set(d.info.rdns, entry); reportWallets(); }
+          if (!entry) { entry = { info: d.info, provider: guardProvider(d.provider), real: d.provider }; guarded.set(d.info.rdns, entry); reportWallets(); }
           return realDispatch(new CustomEvent('eip6963:announceProvider', { detail: Object.freeze({ info: d.info, provider: entry.provider }) }));
         }
       }
@@ -123,7 +157,7 @@ export default defineContentScript({
     };
     // When a dApp asks for providers, (re-)announce the guarded versions.
     window.addEventListener('eip6963:requestProvider', () => {
-      setTimeout(() => { for (const e of guarded.values()) realDispatch(new CustomEvent('eip6963:announceProvider', { detail: Object.freeze(e) })); }, 0);
+      setTimeout(() => { for (const e of guarded.values()) realDispatch(new CustomEvent('eip6963:announceProvider', { detail: Object.freeze({ info: e.info, provider: e.provider }) })); }, 0);
     });
     // Prompt any wallets already present to announce (so we catch + wrap them).
     realDispatch(new Event('eip6963:requestProvider'));
