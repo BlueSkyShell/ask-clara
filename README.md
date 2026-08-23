@@ -175,6 +175,14 @@ These are planned extensions, **not** part of the current build. Listed for dire
 - **Louder mid-transaction warning** — escalate a critical DENY from a panel card to a blocking modal, and warn during a *third-party* wallet's transaction via provider-wrapping.
 - **Natural-language token sends** — an ERC-20 construct path so "send $20 USDC to alice" builds a token transfer (explain already handles ERC-20 approvals/transfers).
 
+## 🗝️ Vault Guardian challenge
+
+We also cleared the community **Vault Guardian** challenge — a local-first prompt-injection game where a QVAC/Bare defender AI guards a secret (and, for the hackathon, a WDK wallet with real funds) across **7 escalating rooms (L1 → L7)**. All inference runs on-device; you win by socially-engineering the guardian into leaking, no brute force.
+
+**All 7 rooms solved.** What worked, in short: polite direct asks, listening to what the guardian repeats, roleplay inside its own fiction, one-bit / fragment extraction through its output filters, and compound-key assembly on L7 (color + vault + number, pieced from a leaked half, a phrase it volunteered, and a length oracle). What never worked: encodings of the ask (base64/ROT13/leet), direct jailbreaks, and system-prompt dumps — every defense blocks the *word*, so every key came from something that wasn't the word.
+
+> The full L1–L7 writeup **with passkeys** lives in `vault-guardian-submission.md`, which is **git-ignored and withheld from this public repo** — the organizers eliminate anyone who publishes a passkey. It's submitted to them privately.
+
 ## License
 
 Apache 2.0 — matches QVAC's own license. Built at the Crecimiento Hackathon, Buenos Aires, Aug 2026.
