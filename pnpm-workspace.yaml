@@ -2,5 +2,12 @@ packages:
   - engine
   - bench
   - shell/extension
+  - desktop
 allowBuilds:
   esbuild: true
+  electron: true
+# Electron Forge pins @electron/node-gyp by git commit; pin it to the identical
+# npm-registry release instead so the supply-chain policy (no exotic subdeps) holds.
+# Not exercised at runtime — QVAC ships prebuilt Bare addons, so no native rebuild.
+overrides:
+  "@electron/node-gyp": 10.2.0-electron.2
