@@ -133,18 +133,29 @@ export default function App() {
     <>
       <div className="hdr">
         <div className="orb" aria-hidden="true"><img src="/orb.png" alt="" className={`orb-${orb}`} /></div>
-        <div>
+        <div className="hgrow">
           <div className="name">Clara</div>
-          <div className={`status ${warn ? 'warn' : up ? 'ok' : ''}`}>
-            {!up ? 'engine offline' : warn ? `${pending.length} request${pending.length > 1 ? 's' : ''} need${pending.length > 1 ? '' : 's'} you` : 'guarding your wallet'}
+          <div className="subrow">
+            <span role="status" aria-label={up ? 'engine connected' : 'engine offline'} className={`stat ${warn ? 'warn' : up ? 'ok' : 'off'}`}>
+              <span className={`dot ${up ? 'up' : ''}`} />
+              {!up ? 'Engine offline' : warn ? `${pending.length} to review` : 'Protecting'}
+            </span>
+            <span className="hsep" aria-hidden="true" />
+            <span className="localai">🛡 Local AI</span>
           </div>
         </div>
-        <div className="right">
-          {info && <span className="addr">{short(info.address)}</span>}
-          <span role="status" aria-label={up ? 'engine connected' : 'engine offline'} className={`dot ${up ? 'up' : ''}`} title={up ? 'engine connected' : 'engine offline'} />
-        </div>
+        <button className="hmenu" aria-label="Open settings" onClick={() => setTab('settings')}>⋯</button>
       </div>
-      {!up && <div className="offline">{err || 'Engine offline — run: pnpm -C engine daemon'}</div>}
+      {!up && (
+        <div className="alert">
+          <span className="alert-ic" aria-hidden="true">⚠️</span>
+          <div className="alert-body">
+            <div className="alert-t">Local engine unreachable</div>
+            <div className="alert-d">Cannot reach 127.0.0.1:8787. Start your local engine to enable protection.</div>
+          </div>
+          <button className="alert-fix" onClick={() => setTab('settings')}>How to fix ↗</button>
+        </div>
+      )}
 
       <div className="body">
         {tab === 'shield' && (
@@ -166,15 +177,19 @@ export default function App() {
 
             <div className={`hero ${orb}`}>
               <div className="bigorb" aria-hidden="true"><div className="glow" /><img src="/orb.png" alt="" className={`orb-${orb}`} /></div>
-              <h1>{warn ? 'One thing needs you' : 'You’re protected'}</h1>
+              <h1>{warn ? 'One thing needs you' : <>You’re protected <span className="h1s" aria-hidden="true">🛡</span></>}</h1>
               <p>{warn ? 'Review the request above — I’ll block it if you don’t want it.'
-                : 'I check every transaction your wallet is about to make and stop anything dangerous before it signs.'}</p>
-              {info && <span className="chip">🛡 <b>guarding</b> · {info.chain}</span>}
+                : 'Clara checks every transaction your wallet is about to sign and stops anything dangerous.'}</p>
+              <div className="chips">
+                <span className="chip2"><span className="ci" aria-hidden="true">🔒</span> Private on this device</span>
+                <span className="chip-div" aria-hidden="true" />
+                <span className="chip2"><span className="ci" aria-hidden="true">📦</span> Local AI</span>
+              </div>
             </div>
 
-            <div className="lbl">recent activity</div>
+            <div className="lbl lbl-row"><span>recent activity</span><span className="lbl-hr" /><span className="lbl-action">View all ›</span></div>
             {activity.length === 0
-              ? <div className="empty"><span className="e-icn">🌙</span>Nothing yet. When a site asks your wallet to sign, I’ll show it here first.</div>
+              ? <div className="empty"><span className="e-moon" aria-hidden="true">🌙</span><div className="e-title">No activity yet</div><div className="e-sub">Wallet requests will appear here first so Clara can review and protect you.</div></div>
               : activity.map((a, i) => (
                 <div key={i} className="act">
                   <span className={`adot ${a.kind}`} />
