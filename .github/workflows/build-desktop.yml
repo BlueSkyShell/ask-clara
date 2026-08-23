@@ -1,0 +1,42 @@
+name: Build Clara Desktop
+
+# Produces the downloadable desktop binaries: AppImage (Linux) + portable zip
+# (Windows). Runs on demand. The QVAC bundle is slimmed to the LLM plugin via
+# desktop/qvac.config.mjs, and each job bundles only its own host's prebuilds.
+on:
+  workflow_dispatch:
+  push:
+    tags: ['desktop-v*']
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: corepack enable
+      - uses: actions/setup-node@v4
+        with: { node-version: '24' }
+      - run: sudo apt-get update && sudo apt-get install -y squashfs-tools   # mksquashfs for AppImage
+      - run: pnpm install --frozen-lockfile
+      - name: Build AppImage
+        run: HOST=linux-x64 bash scripts/package-desktop.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clara-linux-appimage
+          path: desktop-build/out/make/**/*.AppImage
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: corepack enable
+      - uses: actions/setup-node@v4
+        with: { node-version: '24' }
+      - run: pnpm install --frozen-lockfile
+      - name: Build Windows zip
+        shell: bash
+        run: HOST=win32-x64 bash scripts/package-desktop.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clara-windows-zip
+          path: desktop-build/out/make/**/*.zip
