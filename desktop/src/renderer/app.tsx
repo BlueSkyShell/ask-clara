@@ -22,7 +22,12 @@ const short = (a: string) => (a ? a.slice(0, 6) + '…' + a.slice(-4) : '');
 const clock = (t: number) => { const s = Math.round((Date.now() - t) / 1000); return s < 60 ? 'just now' : s < 3600 ? Math.floor(s / 60) + 'm ago' : Math.floor(s / 3600) + 'h ago'; };
 
 function Orb({ state }: { state: 'idle' | 'think' | 'warn' }) {
-  return <div className={`orb orb-${state}`} aria-hidden="true"><span className="orb-core" /><span className="orb-ring" /></div>;
+  return (
+    <div className={`orb orb-${state}`} aria-hidden="true">
+      <span className="orb-glow" />
+      <img className="orb-img" src="./assets/orb.png" alt="" />
+    </div>
+  );
 }
 
 function App() {
@@ -96,7 +101,7 @@ function App() {
     <div className="app">
       {/* ---------- sidebar ---------- */}
       <aside className="side">
-        <div className="brand"><span className="logo-dot" />Clara</div>
+        <div className="brand"><img className="logo-mark" src="./assets/clara-logo-256.png" alt="" />Clara</div>
         <div className="tagline">Local AI. Private. Yours.</div>
         <div className="side-orb"><Orb state={orbState} /><div className="orb-cap">{up ? (busy ? 'Thinking…' : 'Guarding') : 'Offline'}</div>
           <div className="orb-sub">{up ? 'on-device · ready' : 'engine starting'}</div></div>

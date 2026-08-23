@@ -23,7 +23,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--cyan);outline-o
 .side{grid-row:1;border-right:1px solid var(--line);padding:22px 18px;display:flex;flex-direction:column;min-height:0}
 .brand{display:flex;align-items:center;gap:9px;font-size:26px;font-weight:800;letter-spacing:-.03em;
   background:linear-gradient(100deg,var(--cyan),var(--lavender));-webkit-background-clip:text;background-clip:text;color:transparent}
-.logo-dot{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,var(--cyan) 40%,var(--lavender));box-shadow:0 0 14px rgba(111,214,255,.7)}
+.logo-mark{width:27px;height:27px;filter:drop-shadow(0 0 7px rgba(111,214,255,.55))}
 .tagline{color:var(--faint);font-size:12px;margin:3px 0 18px}
 .side-orb{text-align:center;padding:14px 0 18px}
 .orb-cap{font-size:16px;font-weight:700;color:var(--cyan);margin-top:14px}
@@ -44,15 +44,16 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--cyan);outline-o
 .side-foot{margin-top:14px;font-size:11px;color:var(--muted);line-height:1.5}
 .side-foot .dim{color:var(--faint)}.side-foot .lock{margin-right:4px}
 
-/* orb */
-.orb{position:relative;width:132px;height:132px;margin:0 auto;display:grid;place-items:center}
-.orb-core{width:78px;height:78px;border-radius:50%;
-  background:radial-gradient(circle at 38% 32%,#eaf6ff,var(--cyan) 42%,var(--lavender) 82%);
-  box-shadow:0 0 44px 6px rgba(111,214,255,.45),inset -8px -10px 22px rgba(80,40,160,.5);animation:breathe 4s ease-in-out infinite}
-.orb-ring{position:absolute;inset:8px;border-radius:50%;border:1px solid rgba(185,168,255,.35);box-shadow:0 0 30px rgba(185,168,255,.25) inset}
-.orb-think .orb-core{background:radial-gradient(circle at 38% 32%,#fff,var(--lavender) 45%,var(--pink) 88%)}
-.orb-warn .orb-core{background:radial-gradient(circle at 38% 32%,#fff5e8,var(--amber) 45%,#ff8f6b 88%);box-shadow:0 0 44px 6px rgba(255,207,135,.5)}
-@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+/* orb — the real Clara mark with an ambient glow */
+.orb{position:relative;width:136px;height:136px;margin:0 auto;display:grid;place-items:center}
+.orb-glow{position:absolute;width:118px;height:118px;border-radius:50%;
+  background:radial-gradient(circle,rgba(111,214,255,.42),rgba(185,168,255,.2) 55%,transparent 72%);
+  filter:blur(6px);animation:breathe 4s ease-in-out infinite}
+.orb-img{position:relative;width:118px;height:118px;object-fit:contain;animation:breathe 4s ease-in-out infinite}
+.orb-think .orb-glow{background:radial-gradient(circle,rgba(185,168,255,.5),rgba(255,179,224,.24) 55%,transparent 72%)}
+.orb-warn .orb-glow{background:radial-gradient(circle,rgba(255,207,135,.5),rgba(255,143,107,.24) 55%,transparent 72%)}
+.orb-warn .orb-img{filter:hue-rotate(-55deg) saturate(1.15)}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
 
 /* ---------------- center ---------------- */
 .center{grid-row:1;display:flex;flex-direction:column;min-height:0;padding:0 26px}

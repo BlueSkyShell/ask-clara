@@ -12,7 +12,7 @@
     "build:main": "node esbuild.main.mjs",
     "build:preload": "esbuild src/preload.ts --bundle --platform=node --format=cjs --external:electron --outfile=dist/preload.cjs",
     "build:renderer": "esbuild src/renderer/app.tsx --bundle --format=iife --jsx=automatic --outfile=dist/renderer/app.js",
-    "build:html": "node -e \"const fs=require('fs');fs.mkdirSync('dist/renderer',{recursive:true});fs.copyFileSync('src/renderer/index.html','dist/renderer/index.html')\"",
+    "build:html": "node -e \"const fs=require('fs');fs.mkdirSync('dist/renderer/assets',{recursive:true});fs.copyFileSync('src/renderer/index.html','dist/renderer/index.html');for(const f of fs.readdirSync('src/renderer/assets'))fs.copyFileSync('src/renderer/assets/'+f,'dist/renderer/assets/'+f)\"",
     "build": "pnpm build:main && pnpm build:preload && pnpm build:renderer && pnpm build:html",
     "start": "pnpm build && electron .",
     "make": "pnpm build && electron-forge make",

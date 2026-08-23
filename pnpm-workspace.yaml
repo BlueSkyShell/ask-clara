@@ -3,6 +3,8 @@ packages:
   - bench
   - shell/extension
   - desktop
+# Electron Forge packages node_modules and can't follow pnpm's symlinked layout.
+nodeLinker: hoisted
 allowBuilds:
   esbuild: true
   electron: true
