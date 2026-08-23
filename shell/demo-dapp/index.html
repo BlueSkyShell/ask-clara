@@ -73,12 +73,26 @@
   window.addEventListener('eip6963:requestProvider', doAnnounce);
   doAnnounce();
 
-  // ---- The dApp talks to window.ethereum, which is now Clara's GUARD.
-  const provider = () => window.ethereum;
-  const isGuarded = () => { try { return !!(provider() && provider().isClara); } catch { return false; } };
-  document.getElementById('wallet').innerHTML = isGuarded()
-    ? 'Wallet: <b>MockWallet</b> · protected by <b>Clara guard</b> 🛡'
-    : 'Wallet: MockWallet (Clara not detected — is the extension loaded?)';
+  // ---- MODERN dApp flow: discover wallets via EIP-6963 and sign through the
+  // selected provider directly (NOT window.ethereum). If Clara's guard is active,
+  // the provider we receive is already Clara-wrapped — so signing routes through it.
+  let selected = null;
+  const found = new Map();
+  window.addEventListener('eip6963:announceProvider', (e) => {
+    const { info, provider } = e.detail;
+    found.set(info.rdns, { info, provider });
+    if (!selected) selected = { info, provider };
+    render();
+  });
+  window.dispatchEvent(new Event('eip6963:requestProvider'));
+  function render() {
+    const guarded = selected && selected.provider && selected.provider.isClara;
+    document.getElementById('wallet').innerHTML = selected
+      ? `Wallet (via EIP-6963): <b>${selected.info.name}</b> · ${guarded ? 'protected by <b>Clara guard</b> 🛡' : '<span style="color:#ffd08a">NOT guarded — Clara inactive</span>'} <span style="opacity:.6">(${found.size} detected)</span>`
+      : 'No wallet detected — is a wallet + Clara loaded?';
+  }
+  setTimeout(render, 300);
+  const provider = () => selected ? selected.provider : window.ethereum;
 
   const NFT = '0x3333333333333333333333333333333333333333';
   const DRAINER = '0x9999999999999999999999999999999999999999';
