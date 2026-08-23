@@ -19,22 +19,22 @@
       'cta.how':          'How it works',
 
       'hero.headline':    'Crypto,<br>made clear.',
-      'hero.desc':        'Your on-device AI guard. Clara decodes every transaction and tells you what it does — before your wallet ever signs.',
+      'hero.desc':        'Your on-device AI guard. Clara decodes every transaction and tells you what it does, before your wallet ever signs.',
 
       'feat1.title':      'Understands before you sign',
       'feat1.desc':       'Clara decodes every contract call and explains it in plain language. No guessing, no blind trust.',
       'feat2.title':      'Say it. Clara builds it.',
       'feat2.desc':       'Type what you want in plain language. Clara constructs the transaction, verifies it, and shows you exactly what will happen.',
       'feat3.title':      '100% on-device',
-      'feat3.desc':       'The AI model runs locally. Your prompts, your keys, your transactions — nothing ever reaches a server.',
+      'feat3.desc':       'The AI model runs locally. Your prompts, your keys, your transactions. Nothing ever reaches a server.',
 
       'hiw.label':        'How it works',
       'hiw.title':        'Three steps. Full clarity.',
       'step1.title':      'Tell Clara what you want to do',
       'step1.example':    '"Send $20 to Daniel"',
-      'step1.desc':       'Type your intent in plain language — no wallet addresses, no token symbols required.',
+      'step1.desc':       'Type your intent in plain language. No wallet addresses, no token symbols required.',
       'step2.title':      'Clara decodes it',
-      'step2.desc':       'Before anything moves, Clara shows you: recipient, amount, asset, fee, and any risk — all in plain terms.',
+      'step2.desc':       'Before anything moves, Clara shows you: recipient, amount, asset, fee, and any risk. All in plain terms.',
       'step3.title':      'You approve. Or you don\'t.',
       'step3.desc':       'Nothing is signed until you confirm it. Full stop.',
 
@@ -69,22 +69,22 @@
       'cta.how':          'Cómo funciona',
 
       'hero.headline':    'Cripto,<br>hecha clara.',
-      'hero.desc':        'Tu guardián de IA local. Clara decodifica cada transacción y te explica qué va a pasar — antes de que tu wallet firme nada.',
+      'hero.desc':        'Tu guardián de IA local. Clara decodifica cada transacción y te explica qué va a pasar, antes de que tu wallet firme nada.',
 
       'feat1.title':      'Entiende antes de que firmes',
       'feat1.desc':       'Clara decodifica cada llamada de contrato y te la explica en palabras simples. Sin suposiciones, sin confianza ciega.',
       'feat2.title':      'Díselo. Clara lo construye.',
       'feat2.desc':       'Escribe lo que quieres en lenguaje natural. Clara construye la transacción, la verifica y te muestra exactamente qué va a ocurrir.',
       'feat3.title':      '100% en tu dispositivo',
-      'feat3.desc':       'El modelo de IA corre localmente. Tus prompts, tus llaves, tus transacciones — nada llega a ningún servidor.',
+      'feat3.desc':       'El modelo de IA corre localmente. Tus prompts, tus llaves, tus transacciones. Nada llega a ningún servidor.',
 
       'hiw.label':        'Cómo funciona',
       'hiw.title':        'Tres pasos. Total claridad.',
       'step1.title':      'Dile a Clara qué quieres hacer',
       'step1.example':    '"Envía $20 a Daniel"',
-      'step1.desc':       'Escribe tu intención en lenguaje natural — sin direcciones de wallet, sin símbolos de tokens.',
+      'step1.desc':       'Escribe tu intención en lenguaje natural. Sin direcciones de wallet, sin símbolos de tokens.',
       'step2.title':      'Clara lo decodifica',
-      'step2.desc':       'Antes de que se mueva algo, Clara te muestra: destinatario, monto, activo, comisión y cualquier riesgo — en términos simples.',
+      'step2.desc':       'Antes de que se mueva algo, Clara te muestra: destinatario, monto, activo, comisión y cualquier riesgo. En términos simples.',
       'step3.title':      'Tú decides. O no.',
       'step3.desc':       'Nada se firma hasta que tú lo confirmes. Punto final.',
 
