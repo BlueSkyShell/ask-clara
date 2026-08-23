@@ -163,6 +163,21 @@ export default defineContentScript({
     realDispatch(new Event('eip6963:requestProvider'));
     setTimeout(reportWallets, 600);
 
+    // ---- Announce Clara ITSELF as a discoverable EIP-6963 wallet, so modern
+    // dApps (which use EIP-6963, not window.ethereum) route signing through the
+    // guard even when no other wallet is installed. Approved sends execute via
+    // Clara's own testnet wallet; every request still passes check() first.
+    const CLARA_ICON = 'data:image/svg+xml,' + encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">'
+      + '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6fd6ff"/><stop offset="1" stop-color="#b9a8ff"/></linearGradient></defs>'
+      + '<rect width="96" height="96" rx="24" fill="#0a0e1f"/>'
+      + '<circle cx="48" cy="48" r="22" fill="none" stroke="url(#g)" stroke-width="5"/>'
+      + '<circle cx="48" cy="48" r="8" fill="url(#g)"/></svg>');
+    const claraInfo: Info = { uuid: 'c1a7a000-0000-4000-8000-00000000c1a7', name: 'Clara', icon: CLARA_ICON, rdns: 'app.askclara.guard' };
+    const announceClara = () => realDispatch(new CustomEvent('eip6963:announceProvider', { detail: Object.freeze({ info: claraInfo, provider: legacyGuard }) }));
+    window.addEventListener('eip6963:requestProvider', () => setTimeout(announceClara, 0));
+    announceClara();
+
     function safeParse(v: unknown): unknown {
       if (typeof v !== 'string') return v;
       try { return JSON.parse(v); } catch { return v; }
