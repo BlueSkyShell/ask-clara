@@ -116,7 +116,7 @@
       { n: pct(s.fnRate), c: 'good', l: 'missed drains (FN)', d: s.falseNegatives + ' of ' + (s.total - (s.falsePositives + 0) ? '' : '') + (R.explain.runs * 12) + ' malicious' },
       { n: pct(s.fpRate), c: 'good', l: 'false alarms (FP)', d: s.falsePositives + ' of ' + (R.explain.runs * 8) + ' safe' },
       { n: pct(s.correct / s.total), c: 'info', l: 'verdict + rule correct', d: s.correct + ' of ' + s.total + ' (deterministic)' },
-      { n: pct(s.narrationTemplateRate), c: 'info', l: 'template fallback', d: 'model handled ' + pct(1 - s.narrationTemplateRate) + ' of narrations' },
+      { n: pct(s.narrationFallbackRate), c: 'info', l: 'policy fallback', d: 'model handled ' + pct(1 - s.narrationFallbackRate) + ' of narrations' },
     ];
     const host = document.getElementById('explain-tiles');
     tiles.forEach(t => host.appendChild(el(

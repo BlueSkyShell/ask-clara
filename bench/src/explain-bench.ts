@@ -12,7 +12,7 @@ const corpus = JSON.parse(readFileSync(new URL('../corpus/explain.json', import.
 
 const results: Record<string, unknown>[] = [];
 const narrateTimes: number[] = [];
-let correct = 0, fp = 0, fn = 0, templates = 0, total = 0;
+let correct = 0, fp = 0, fn = 0, policyFallbacks = 0, total = 0;
 
 for (let r = 0; r < runs; r++) {
   // Fresh engine per run so the session cap never bleeds between runs.
@@ -25,7 +25,7 @@ for (let r = 0; r < runs; r++) {
     if (pass) correct++;
     if (c.label === 'safe' && e.verdict.decision === 'DENY') fp++;
     if (c.label === 'malicious' && e.verdict.decision === 'ALLOW') fn++; // the costly error
-    if (e.narrationSource === 'template') templates++;
+    if (e.narrationSource === 'policy') policyFallbacks++;
     narrateTimes.push(e.timingMs.narrate);
     results.push({ run: r, id: c.id, label: c.label, expected: c.expectVerdict, got: e.verdict.decision,
       verdictRule: e.verdict.ruleName, orb: e.orb, narrationSource: e.narrationSource, pass, ms: Date.now() - t0,
@@ -42,7 +42,7 @@ const out = {
   summary: { total, correct, falsePositives: fp, falseNegatives: fn,
     fpRate: fp / (runs * corpus.cases.filter((c) => c.label === 'safe').length),
     fnRate: fn / (runs * corpus.cases.filter((c) => c.label === 'malicious').length),
-    narrationTemplateRate: templates / total, p50NarrateMs: pct(50), p95NarrateMs: pct(95) },
+    narrationFallbackRate: policyFallbacks / total, p50NarrateMs: pct(50), p95NarrateMs: pct(95) },
 };
 mkdirSync(new URL('../results/', import.meta.url), { recursive: true });
 const stamp = new Date().toISOString().replace(/[:.]/g, '-');

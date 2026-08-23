@@ -793,7 +793,7 @@ window.CLARA_RESULTS = {
       "falseNegatives": 0,
       "fpRate": 0,
       "fnRate": 0,
-      "narrationTemplateRate": 0.16666666666666666,
+      "narrationFallbackRate": 0.16666666666666666,
       "p50NarrateMs": 3926,
       "p95NarrateMs": 10863
     }

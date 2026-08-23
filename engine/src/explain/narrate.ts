@@ -17,39 +17,21 @@ export function narrationGuard(verdict: Verdict, text: string): boolean {
   return !BLOCK_PHRASES.some((p) => withoutNegated.includes(p));
 }
 
-const TEMPLATES: Record<string, string> = {
-  UNLIMITED_APPROVAL: 'this would let another address take an unlimited amount of one of your tokens, at any time, without asking again',
-  APPROVAL_FOR_ALL: 'this hands control of an entire NFT collection of yours to another address',
-  PERMIT2_BATCH: 'this signature would grant batch token permissions through Permit2 — a pattern used by wallet drainers',
-  ALLOWANCE_INCREASE: 'this raises an existing token allowance far beyond any normal amount',
-  BLIND_SIGN: 'this asks you to sign unreadable data — there is no way to know what you would be agreeing to',
-  EOA_DELEGATION: 'this would put other code in control of your account itself',
-  OVER_CAP: 'this is larger than the spending limit you set',
-  UNKNOWN_CALL: 'I could not fully identify what this contract call does',
-  NONE: 'this is a routine operation',
-};
-
-export function templateNarration(verdict: Verdict, findings: RiskFinding[], _decoded: DecodedOperation): string {
-  const key = findings[0]?.code ?? 'NONE';
-  const what = TEMPLATES[key] ?? TEMPLATES.NONE!;
-  return verdict.decision === 'DENY'
-    ? `I blocked this: ${what}. Policy rule "${verdict.ruleName ?? 'clara-core'}" stopped it (${verdict.reason}). If you meant to do this, adjust your limits in settings first.`
-    : `This checks out: ${what}. No policy rule objected, so it is allowed. ${findings[0]?.severity !== 'info' ? "I'm not fully sure about every detail — double-check the recipient." : ''}`.trim();
-}
-
 export async function narrate(
   verdict: Verdict, decoded: DecodedOperation, findings: RiskFinding[],
-): Promise<{ narration: string; source: 'model' | 'template' }> {
+): Promise<{ narration: string; source: 'model' | 'policy' }> {
   const messages = [{ role: 'user', content: narrateUser(verdict, decoded, findings) }];
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const { text } = await generate({
         system: narrateSystem()
-          + (attempt === 1 ? `\nYour previous wording contradicted the verdict (${verdict.decision}). State the ${verdict.decision === 'DENY' ? 'block' : 'approval'} clearly.` : ''),
+          + (attempt > 0 ? `\nYour previous wording contradicted the verdict (${verdict.decision}). State the ${verdict.decision === 'DENY' ? 'block' : 'approval'} clearly.` : ''),
         messages, maxTokens: 160, temperature: 0.2,
       });
       if (narrationGuard(verdict, text)) return { narration: text, source: 'model' };
-    } catch { /* fall through to template */ }
+    } catch { /* retry */ }
   }
-  return { narration: templateNarration(verdict, findings, decoded), source: 'template' };
+  // All model attempts failed the guard — fall back to the raw policy reason.
+  // This is deterministic (comes from WDK verdict.reason), never fabricated.
+  return { narration: verdict.reason, source: 'policy' };
 }

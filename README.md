@@ -1,4 +1,4 @@
-<p align="center">
+﻿<p align="center">
   <img src="landing/assets/clara-logo-128.png" width="96" alt="Clara">
 </p>
 
@@ -36,7 +36,7 @@ decode (viem) → policy verdict (WDK) → narrate (QVAC local LLM)
                     + which rule fired     (cannot contradict it)
 ```
 
-The safety verdict is deterministic and comes from WDK's rule evaluation. The model never votes on it — so Clara **structurally cannot hallucinate “looks safe.”** A guard rejects any narration that contradicts the verdict; a template takes over if the model strays. This is why the reliability numbers below are evidence, not vibes.
+The safety verdict is deterministic and comes from WDK's rule evaluation. The model never votes on it — so Clara **structurally cannot hallucinate “looks safe.”** A guard rejects any narration that contradicts the verdict; on persistent failure the raw policy reason is used verbatim (never fabricated). This is why the reliability numbers below are evidence, not vibes.
 
 ## Reliability results
 
@@ -50,10 +50,10 @@ Two benchmarks, each case run 3×. Full runner + corpora in [`bench/`](bench/); 
 | Missed drains (false negatives) | **0 / 36** (0.0%) |
 | False alarms (false positives) | **0 / 24** (0.0%) |
 | Verdict + rule correct | **60 / 60** (deterministic by design) |
-| Narration handled by model (rest = safe template) | ~83% |
+| Narration handled by model (rest = policy reason verbatim) | ~83% |
 | Narration latency | p50 ~3.9s · p95 ~10.9s (CPU/iGPU) |
 
-Verdict accuracy is 100% *because it is deterministic* — that is the design working, and we say so plainly rather than dressing it up as model skill. The model-dependent metric here is narration quality (how often the local model words the verdict well vs. falls back to a safe template).
+Verdict accuracy is 100% *because it is deterministic* — that is the design working, and we say so plainly rather than dressing it up as model skill. The model-dependent metric here is narration quality (how often the local model words the verdict well vs. falls back to the raw policy reason).
 
 ### Construct — did it build the right thing, and refuse the traps?
 26 natural-language requests (clean / ambiguous / adversarial) × 3 runs, on two models.

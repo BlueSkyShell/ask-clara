@@ -41,7 +41,7 @@ export interface Explanation {
   decoded: DecodedOperation;
   findings: RiskFinding[];
   narration: string;
-  narrationSource: 'model' | 'template'; // template = guard fallback fired
+  narrationSource: 'model' | 'policy'; // policy = guard fallback: raw verdict.reason used
   orb: 'safe' | 'warning'; // deterministic: DENY or any warning+ finding → 'warning'
   timingMs: { decode: number; policy: number; narrate: number };
 }
