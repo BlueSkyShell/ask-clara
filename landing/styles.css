@@ -162,6 +162,30 @@ ul, ol { list-style: none; }
   gap: 0.625rem;
 }
 
+/* Language toggle */
+.lang-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  transition: border-color var(--t-base), color var(--t-base), background var(--t-base);
+  flex-shrink: 0;
+}
+.lang-toggle:hover {
+  border-color: var(--border-hover);
+  color: var(--text);
+  background: rgba(111, 214, 255, 0.06);
+}
+.lang-toggle:focus-visible {
+  outline: 2px solid var(--lavender);
+  outline-offset: 3px;
+}
 
 .site-header__cta {
   font-size: 0.875rem;
