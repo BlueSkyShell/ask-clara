@@ -111,7 +111,7 @@ export default function App() {
   return (
     <>
       <div className="hdr">
-        <div className="orb"><img src="/orb.png" alt="" className={`orb-${orb}`} /></div>
+        <div className="orb" aria-hidden="true"><img src="/orb.png" alt="" className={`orb-${orb}`} /></div>
         <div>
           <div className="name">Clara</div>
           <div className={`status ${warn ? 'warn' : up ? 'ok' : ''}`}>
@@ -120,7 +120,7 @@ export default function App() {
         </div>
         <div className="right">
           {info && <span className="addr">{short(info.address)}</span>}
-          <span className={`dot ${up ? 'up' : ''}`} title={up ? 'engine connected' : 'engine offline'} />
+          <span role="status" aria-label={up ? 'engine connected' : 'engine offline'} className={`dot ${up ? 'up' : ''}`} title={up ? 'engine connected' : 'engine offline'} />
         </div>
       </div>
       {!up && <div className="offline">{err || 'Engine offline — run: pnpm -C engine daemon'}</div>}
@@ -144,7 +144,7 @@ export default function App() {
             ))}
 
             <div className={`hero ${orb}`}>
-              <div className="bigorb"><div className="glow" /><img src="/orb.png" alt="" className={`orb-${orb}`} /></div>
+              <div className="bigorb" aria-hidden="true"><div className="glow" /><img src="/orb.png" alt="" className={`orb-${orb}`} /></div>
               <h1>{warn ? 'One thing needs you' : 'You’re protected'}</h1>
               <p>{warn ? 'Review the request above — I’ll block it if you don’t want it.'
                 : 'I check every transaction your wallet is about to make and stop anything dangerous before it signs.'}</p>
@@ -239,7 +239,7 @@ export default function App() {
 
       {tab === 'chat' && (
         <form className="compose" onSubmit={(e) => { e.preventDefault(); ask(); }}>
-          <input value={input} onChange={(e) => setInput(e.target.value)} disabled={busy || !up}
+          <input aria-label="Ask Clara or build a transaction" value={input} onChange={(e) => setInput(e.target.value)} disabled={busy || !up}
             placeholder={busy ? 'thinking…' : 'send 0.001 ETH to alice…'} />
           <button className="send" type="submit" disabled={busy || !up}>Ask</button>
         </form>

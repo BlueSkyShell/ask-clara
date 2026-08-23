@@ -131,3 +131,21 @@ button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px so
 .wal .wname{flex:1;font-size:13px;font-weight:600}
 .wal .wname small{display:block;color:var(--faint);font-family:var(--mono);font-size:10px;font-weight:400;margin-top:1px;overflow-wrap:anywhere}
 .wal .wbadge{font-family:var(--mono);font-size:10px;color:var(--mint);border:1px solid rgba(127,232,195,.4);border-radius:999px;padding:3px 9px;flex-shrink:0}
+
+/* ---------- craft pass ---------- */
+/* Disciplined micro-interactions: 100ms color/opacity feedback (ease-out for enter). */
+.btn,.tabs button,.compose .send,.compose input,.card,.wal,.act,.set .srow{transition:background-color .1s ease,border-color .1s ease,color .15s ease,transform .06s ease}
+.btn:hover:not(:disabled){border-color:var(--line2);filter:brightness(1.08)}
+.tabs button:hover:not(.on){color:var(--muted)}
+.compose .send:hover:not(:disabled){filter:brightness(1.06)}
+/* Bigger hit targets on small actions (≥40px tall). */
+.btn{min-height:40px}
+.tabs button{min-height:52px}
+.compose .send{min-height:42px}
+/* Focus ring consistency — offset so it reads on dark surfaces. */
+button:focus-visible,input:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:9px}
+/* Reduced motion: honour the OS setting — kill all transitions/animations. */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
+  .hero .bigorb img{animation:none !important}
+}
