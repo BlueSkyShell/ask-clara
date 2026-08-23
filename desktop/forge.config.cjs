@@ -10,6 +10,9 @@ module.exports = {
   packagerConfig: {
     name: 'Clara',
     asar: false,
+    // QVAC ships prebuilt Bare addons (no native rebuild); Packager's prune
+    // invokes the package manager in the deploy tree and stalls, so skip it.
+    prune: false,
     // Ship only what the app needs at runtime (main.mjs bundles the rest).
     ignore: [
       /^\/src($|\/)/,
@@ -18,10 +21,11 @@ module.exports = {
     ],
   },
   makers: [
-    // Linux → AppImage (single portable file).
-    new MakerAppImage({ options: { name: 'Clara', productName: 'Clara', bin: 'Clara' } }, ['linux']),
-    // Windows → portable zip (installer/Squirrel needs wine+mono; do that on CI).
-    new MakerZIP({}, ['win32']),
+    // Linux → AppImage (single portable file). Config-object form so Forge
+    // resolves + instantiates the maker itself (robust across 7.x versions).
+    { name: '@reforged/maker-appimage', platforms: ['linux'], config: { options: { name: 'Clara', productName: 'Clara', bin: 'Clara' } } },
+    // Windows → portable zip.
+    { name: '@electron-forge/maker-zip', platforms: ['win32'] },
   ],
   plugins: [
     new QvacForgePlugin({
