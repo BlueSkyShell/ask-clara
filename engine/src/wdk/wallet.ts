@@ -24,6 +24,10 @@ export async function initWallet(policies?: Policy[]): Promise<Wallet> {
   const account = await wdk.getAccount(CONFIG.chain.name, 0);
   const address = await account.getAddress();
   const contacts: Record<string, string> = {};
+  // 'self' = your own address (account 0). Sending here is a real on-chain tx
+  // that returns the value to you in the same transaction — you only pay gas.
+  // Perfect for testing the send flow without losing funds.
+  contacts['self'] = address;
   for (let i = 0; i < CONFIG.contactLabels.length; i++) {
     const a = await wdk.getAccount(CONFIG.chain.name, i + 1);
     contacts[CONFIG.contactLabels[i]!] = await a.getAddress();
